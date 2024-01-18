@@ -23,6 +23,8 @@ class BathTubPlant(Plant):
         return self.water_level
 
     def timestep(self, control_signal):
+        if 2*9.81*self.water_level < 0:
+            raise ValueError("Water level is negative")
         velocity = jnp.sqrt(2*9.81*self.water_level)
         disturbance = np.random.uniform(self.noise_range[0],self.noise_range[1])
         self.water_level += control_signal + disturbance -self.drain_area*velocity
