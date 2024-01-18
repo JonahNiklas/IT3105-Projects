@@ -20,13 +20,14 @@ from config import (
 
 
 def run_one_timestep(params, plant, controller: Controller, target):
-    error = target - plant.get_output()
+    error = jnp.abs(target - plant.get_output())
     control_signal = controller.calculate_control_signal(params, error)
     plant.timestep(control_signal)
     return plant.get_output(), control_signal
 
 
-def run_one_epoch(params, controller: Controller):
+def run_one_epoch(params):
+    controller = get_controller()
     plant, target = get_plant()
     output = []
     control_signal = []
@@ -40,10 +41,9 @@ def run_one_epoch(params, controller: Controller):
     return mse
 
 
-def get_neural_network():
+def get_params():
     if CONTROLLER == "pid":
-        params = np.random.uniform(-0.1, 0.1, 3)
-        controller = PIDController()
+        params = np.random.uniform(0, 1, 3)
 
     elif CONTROLLER == "neural_net":
         layers = NEURAL_NETWORK
@@ -62,13 +62,25 @@ def get_neural_network():
             )
             sender = receiver
             params.append([weights, biases])
+    else:
+        raise ValueError("Invalid controller type in config")
+
+    return params
+
+
+def get_controller():
+    if CONTROLLER == "pid":
+        controller = PIDController()
+
+    elif CONTROLLER == "neural_net":
         controller = NeuralNetController(
-            params, activation_functions=NEURAL_NETWORK["activationFunctions"]
+            activation_functions=NEURAL_NETWORK["activationFunctions"]
         )
     else:
         raise ValueError("Invalid controller type in config")
-    
-    return controller, params
+
+    return controller
+
 
 def get_plant():
     if PLANT == "bathtub":
@@ -98,10 +110,10 @@ def get_plant():
 
 def main():
     errors = []
-    controller, params = get_neural_network()
+    params = get_params()
     for i in range(TRAINING_EPOCHS):
         print(f"Epoch {i}")
-        mse, gradients = jax.value_and_grad(run_one_epoch)(params, controller)
+        mse, gradients = jax.value_and_grad(run_one_epoch)(params)
         errors.append(mse)
         params = params - gradients * LEARNING_RATE
 

@@ -14,7 +14,7 @@ class PIDController(Controller):
         kp, kd, ki = parameters
         self.error_history.append(error)
         delta_error = error - self.error_history[-2] if len(self.error_history) > 1 else 0
-        return kp + delta_error * kd + sum(self.error_history) * ki
+        return error * parameters[0] + delta_error * parameters[1] + sum(self.error_history) * parameters[2]
 
 class NeuralNetController(Controller):
 
