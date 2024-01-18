@@ -1,0 +1,25 @@
+{
+  "plant": "bathtub",
+  "controller": "pid",
+  "neuralNetwork": {
+    "numLayers": 3,
+    "neuronsPerLayer": [10, 20, 5],
+    "activationFunctions": ["sigmoid", "tanh", "relu"],
+    "weightRange": [-1, 1],
+    "biasRange": [-0.5, 0.5]
+  },
+  "trainingEpochs": 100,
+  "simulationTimesteps": 10,
+  "learningRate": 0.01,
+  "noiseRange": [-0.1, 0.1],
+  "crossSectionalArea": {
+    "bathtub": 100,
+    "drain": 1
+  },
+  "initialWaterHeight": 20,
+  "cournotCompetition": {
+    "maxPrice": 100,
+    "marginalCost": 5,
+    "targetProfit": 100
+  }
+}
