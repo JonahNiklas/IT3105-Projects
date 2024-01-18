@@ -1,15 +1,29 @@
 class Controller:
-    def calculate_control_signal(self, error):
+
+    def __init__(self):
+        self.error_history = []
+
+    def set_parameters(self, parameters):
+        # Set the parameters of the controller
+        # ...
+        pass
+
+    def calculate_control_signal(self, error) -> float:
         # Calculate control signal U based on the error
         # ...
         pass
 
 class PIDController(Controller):
-    def __init__(self, kp, ki, kd):
+    def __init__(self, kp: float, ki: float, kd: float):
+        super().__init__()
         self.kp = kp
         self.ki = ki
         self.kd = kd
-        self.error_history = []
+
+    def set_parameters(self, parameters):
+        self.kp = parameters[0]
+        self.ki = parameters[1]
+        self.kd = parameters[2]
 
     def calculate_control_signal(self, error):
         self.error_history.append(error)
@@ -17,21 +31,14 @@ class PIDController(Controller):
         return error * self.kp + delta_error * self.kd + sum(self.error_history) * self.ki
 
 class NeuralNetController(Controller):
-    def __init__(self, num_layers, neurons_per_layer, activation_functions, weight_range, bias_range):
-        self.num_layers = num_layers
-        if(len(neurons_per_layer) != num_layers):
-            raise ValueError("Number of layers and neurons per layer must be equal")
-        if(len(activation_functions) != num_layers):
-            raise ValueError("Number of layers and activation functions must be equal")
-        self.neurons_per_layer = neurons_per_layer
+    def __init__(self, parameters, activation_functions):
+        super().__init__()
+        self.parameters = parameters
         self.activation_functions = activation_functions
-        self.weight_range = weight_range
-        self.bias_range = bias_range
-        self.weights = []
-        self.biases = []
-        
+
+    def set_parameters(self, parameters):
+        self.parameters = parameters
 
     def calculate_control_signal(self, error):
-        # Calculate control signal U based on the error
-        # ...
-        pass
+        self.error_history.append(error)
+        raise NotImplementedError("Implement this method")

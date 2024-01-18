@@ -24,7 +24,7 @@ class BathTubPlant(Plant):
 
     def timestep(self, control_signal):
         velocity = jnp.sqrt(2*9.81*self.water_level)
-        disturbance = jnp.random.uniform(self.noise_range[0],self.noise_range[1])
+        disturbance = np.random.uniform(self.noise_range[0],self.noise_range[1])
         self.water_level += control_signal + disturbance -self.drain_area*velocity
     
 class CournotPlant(Plant):
@@ -42,6 +42,6 @@ class CournotPlant(Plant):
 
     def timestep(self, control_signal):
         self.q1 += control_signal
-        self.q2 += jnp.random.uniform(self.noise_range[0],self.noise_range[1])
+        self.q2 += np.random.uniform(self.noise_range[0],self.noise_range[1])
 
 
