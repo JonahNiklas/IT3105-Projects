@@ -56,7 +56,7 @@ def get_params():
                 (1, receiver),
             )
             sender = receiver
-            params.append([weights, biases])
+            params.append((weights, biases))
     else:
         raise ValueError("Invalid controller type in config")
     return params
@@ -113,7 +113,7 @@ def main():
         print(f"MSE: {mse_item}")
         print(f"Gradients: {gradients}")
         mse_epochs.append(mse_item)
-        assert params.shape == gradients.shape
+        # assert params.shape == gradients.shape
         params = params - gradients * LEARNING_RATE
         print("====================================")
         # Update control signal

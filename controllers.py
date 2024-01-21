@@ -25,6 +25,7 @@ class NeuralNetController(Controller):
         self.activation_functions = activation_functions
 
     def sigmoid(self, x):
+        x = jnp.clip(x, -20, 20)  # Clip values to prevent overflow or underflow
         return 1 / (1 + jnp.exp(-x))
       
     def tanh(self, x):
@@ -57,6 +58,6 @@ class NeuralNetController(Controller):
                 raise ValueError("Invalid activation function in config")
         
         assert activation.shape == (1, 1)
-        activation = activation[0][0]
+        activation = activation.squeeze()
         assert activation.shape == ()
         return activation
