@@ -1,5 +1,5 @@
 PLANT = "bathtub"
-CONTROLLER = "pid"
+CONTROLLER = "pid" # "pid" | "neural_net
 NEURAL_NETWORK = {
     "num_layers": 3,
     "neurons_per_layer": [10, 20, 5],
@@ -7,9 +7,9 @@ NEURAL_NETWORK = {
     "weight_range": [-1, 1],
     "bias_range": [-0.5, 0.5]
 }
-TRAINING_EPOCHS = 100
-SIMULATION_TIMESTEPS = 10
-LEARNING_RATE = 0.01
+TRAINING_EPOCHS = 20
+SIMULATION_TIMESTEPS = 100
+LEARNING_RATE = 0.001
 NOISE_RANGE = [-0.1, 0.1]
 CROSS_SECTIONAL_AREA = {
     "bathtub": 100,
