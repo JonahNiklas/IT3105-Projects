@@ -23,12 +23,13 @@ class BathTubPlant(Plant):
         return self.water_level
 
     def timestep(self, control_signal):
-        if self.water_level < 0:
-            print("Water level is negative, this should not happen")
+        if(self.water_level < 0):
+            print("Water level is negative, resetting to 0")
+            self.water_level = 0
         velocity =  jnp.sqrt(2*9.81*self.water_level)
-        
         disturbance = np.random.uniform(self.noise_range[0],self.noise_range[1])
-        self.water_level = self.water_level + control_signal + disturbance -self.drain_area*velocity
+        
+        self.water_level += (control_signal + disturbance -self.drain_area*velocity)/self.area
     
 class CournotPlant(Plant):
     def __init__(self, max_price, marginal_cost, q1,q2, noise_range):
@@ -36,6 +37,7 @@ class CournotPlant(Plant):
         self.marginal_cost = marginal_cost
         self.q1 = q1
         self.q2 = q2
+        self.noise_range = noise_range
 
     def price(self):
         return self.max_price - self.q1 - self.q2

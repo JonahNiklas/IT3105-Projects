@@ -20,7 +20,7 @@ from config import (
 
 
 def run_one_timestep(params, plant, controller: Controller, target):
-    error = jnp.abs(target - plant.get_output())
+    error = target - plant.get_output()
     control_signal = controller.calculate_control_signal(params, error)
     plant.timestep(control_signal)
     return error
@@ -34,7 +34,7 @@ def run_one_epoch(params):
         error = run_one_timestep(params, plant, controller, target)
         errors.append(error)
 
-    mse = jnp.mean(jnp.array(errors))
+    mse = jnp.mean(jnp.square(jnp.array(errors)))
     return mse
 def get_params():
     if CONTROLLER == "pid":
@@ -89,8 +89,8 @@ def get_plant():
         plant = CournotPlant(
             max_price=COURNOT_COMPETITION["max_price"],
             marginal_cost=COURNOT_COMPETITION["marginal_cost"],
-            # q1=INI,
-            # q2=config["initialQ2"],
+            q1=np.random.uniform(0, 1, 1),
+            q2=np.random.uniform(0, 1, 1),
             noise_range=NOISE_RANGE
         )
         target = COURNOT_COMPETITION["target_profit"]
