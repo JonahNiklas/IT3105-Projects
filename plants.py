@@ -59,3 +59,20 @@ class CournotPlant(Plant):
         self.q2 = bound(
             self.q2 + np.random.uniform(self.noise_range[0], self.noise_range[1])
         )
+
+
+class PopulationDynamicsPlant(Plant):
+    def __init__(self, initial_population, birth_rate, death_rate, carrying_capacity, noise_range):
+        self.population = initial_population
+        self.birth_rate = birth_rate
+        self.death_rate = death_rate
+        self.carrying_capacity = carrying_capacity
+        self.noise_range = noise_range
+
+    def timestep(self, control_signal):
+        crowding_factor = (1-self.population / self.carrying_capacity)
+        disturbance = np.random.uniform(self.noise_range[0], self.noise_range[1])
+        self.population += self.population*crowding_factor*(self.birth_rate-self.death_rate+control_signal)+disturbance
+
+    def get_output(self):
+        return self.population

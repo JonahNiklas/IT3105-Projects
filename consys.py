@@ -1,6 +1,6 @@
 import json
 from controllers import Controller, PIDController, NeuralNetController
-from plants import BathTubPlant, CournotPlant
+from plants import BathTubPlant, CournotPlant, PopulationDynamicsPlant
 import matplotlib.pyplot as plt
 import jax
 import numpy as np
@@ -14,6 +14,7 @@ from config import (
     NEURAL_NETWORK,
     NOISE_RANGE,
     PLANT,
+    POPULATION,
     SIMULATION_TIMESTEPS,
     TRAINING_EPOCHS,
 )
@@ -41,10 +42,10 @@ def get_params():
         params = np.random.uniform(0, 0.1, 3)
 
     elif CONTROLLER == "neural_net":
-        layers = NEURAL_NETWORK["neurons_per_layer"]
+        hidden_layers = NEURAL_NETWORK["neurons_per_hidden_layer"]
         params = []
         sender = 3
-        for receiver in layers:
+        for receiver in hidden_layers+[1]:
             weights = np.random.uniform(
                 NEURAL_NETWORK["weight_range"][0],
                 NEURAL_NETWORK["weight_range"][1],
@@ -94,8 +95,15 @@ def get_plant():
             noise_range=NOISE_RANGE
         )
         target = COURNOT_COMPETITION["target_profit"]
-    # elif config["plant"] == "plant3":
-    # plant = plant3()
+    elif PLANT == "population":
+        plant = PopulationDynamicsPlant(
+            initial_population=POPULATION["initial_population"],
+            birth_rate=POPULATION["birth_rate"],
+            death_rate=POPULATION["death_rate"],
+            carrying_capacity=POPULATION["carrying_capacity"],
+            noise_range=NOISE_RANGE
+        )
+        target = POPULATION["target_population"]
     else:
         raise ValueError("Invalid plant type in config")
 
@@ -103,23 +111,26 @@ def get_plant():
 
 
 def main():
-    mse_epochs = []
-    params = get_params()
-    for i in range(TRAINING_EPOCHS):
-        print(f"Epoch {i+1}")
-        print(f"Params: {params}")
-        mse, gradients = jax.value_and_grad(run_one_epoch)(params)
-        mse_item = mse.item()
-        print(f"MSE: {mse_item}")
-        print(f"Gradients: {gradients}")
-        mse_epochs.append(mse_item)
-        # assert params.shape == gradients.shape
+  mse_epochs = []
+  params = get_params()
+  for i in range(TRAINING_EPOCHS):
+    print(f"Epoch {i+1}")
+    print(f"Params: {params}")
+    mse, gradients = jax.value_and_grad(run_one_epoch)(params)
+    mse_item = mse.item()
+    print(f"MSE: {mse_item}")
+    print(f"Gradients: {gradients}")
+    mse_epochs.append(mse_item)
+    
+    if isinstance(params, list):
+        params = [[p - g * LEARNING_RATE for p, g in zip(param_layer, grad_layer)] for param_layer, grad_layer in zip(params, gradients)]
+    else:
         params = params - gradients * LEARNING_RATE
-        print("====================================")
-        # Update control signal
-        plt.plot(mse_epochs)
-        plt.pause(0.001)  # Pause for a short duration to update the plot
-    plt.show()
+    
+    print("====================================")
+  
+  plt.plot(mse_epochs)
+  plt.show()
 
 
 if __name__ == "__main__":
