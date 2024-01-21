@@ -103,21 +103,23 @@ def get_plant():
 
 
 def main():
-  mse_epochs = []
-  params = get_params()
-  for i in range(TRAINING_EPOCHS):
-    print(f"Epoch {i+1}")
-    print(f"Params: {params}")
-    mse, gradients = jax.value_and_grad(run_one_epoch)(params)
-    mse_item = mse.item()
-    print(f"MSE: {mse_item}")
-    print(f"Gradients: {gradients}")
-    mse_epochs.append(mse_item)
-    params = params - gradients * LEARNING_RATE
-    print("====================================")
-    # Update control signal
-  plt.plot(mse_epochs)
-  plt.show()
+    mse_epochs = []
+    params = get_params()
+    for i in range(TRAINING_EPOCHS):
+        print(f"Epoch {i+1}")
+        print(f"Params: {params}")
+        mse, gradients = jax.value_and_grad(run_one_epoch)(params)
+        mse_item = mse.item()
+        print(f"MSE: {mse_item}")
+        print(f"Gradients: {gradients}")
+        mse_epochs.append(mse_item)
+        assert params.shape == gradients.shape
+        params = params - gradients * LEARNING_RATE
+        print("====================================")
+        # Update control signal
+        plt.plot(mse_epochs)
+        plt.pause(0.001)  # Pause for a short duration to update the plot
+    plt.show()
 
 
 if __name__ == "__main__":

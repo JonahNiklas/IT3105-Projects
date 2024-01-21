@@ -1,15 +1,15 @@
 PLANT = "bathtub" # "bathtub" | "cournot"
-CONTROLLER = "pid" # "pid" | "neural_net
+CONTROLLER = "neural_net" # "pid" | "neural_net
 NEURAL_NETWORK = {
     "num_layers": 3,
-    "neurons_per_layer": [10, 20, 5],
+    "neurons_per_layer": [5, 2, 1],
     "activation_functions": "sigmoid", # "sigmoid" | "tanh" | "relu"
     "weight_range": [-1, 1],
     "bias_range": [-0.5, 0.5]
 }
 TRAINING_EPOCHS = 20
 SIMULATION_TIMESTEPS = 100
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 NOISE_RANGE = [-0.1, 0.1]
 CROSS_SECTIONAL_AREA = {
     "bathtub": 100,
@@ -17,7 +17,7 @@ CROSS_SECTIONAL_AREA = {
 }
 INITIAL_WATER_HEIGHT = 100
 COURNOT_COMPETITION = {
-    "max_price": 100,
-    "marginal_cost": 5,
-    "target_profit": 100
+    "max_price": 1,
+    "marginal_cost": 0.1,
+    "target_profit": 1
 }
