@@ -2,14 +2,11 @@ from config import (
     BATHTUB,
     CONTROLLER,
     COURNOT_COMPETITION,    
-    LEARNING_RATE,
     NEURAL_NETWORK,
     NOISE_RANGE,
     PID_PARAM_RANGE,
     PLANT,
     POPULATION,
-    SIMULATION_TIMESTEPS,
-    TRAINING_EPOCHS,
 )
 import numpy as np
 

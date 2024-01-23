@@ -32,9 +32,9 @@ class BathTubPlant(Plant):
         velocity = jnp.sqrt(2 * 9.81 * self.water_level)
         disturbance = np.random.uniform(self.noise_range[0], self.noise_range[1])
 
-        self.water_level += (
+        self.water_level =jnp.maximum(0,self.water_level + (
             control_signal + disturbance - self.drain_area * velocity
-        ) / self.area
+        ) / self.area)
 
 
 class CournotPlant(Plant):

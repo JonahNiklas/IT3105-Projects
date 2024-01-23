@@ -1,14 +1,9 @@
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import numpy as np
-
-from config import (BATHTUB, CONTROLLER, COURNOT_COMPETITION, LEARNING_RATE,
-                    NEURAL_NETWORK, NOISE_RANGE, PID_PARAM_RANGE, PLANT,
-                    POPULATION, SIMULATION_TIMESTEPS, TRAINING_EPOCHS)
-from controllers import Controller, NeuralNetController, PIDController
+from config import (LEARNING_RATE,SIMULATION_TIMESTEPS, TRAINING_EPOCHS)
+from controllers import Controller
 from helper import get_controller, get_params, get_plant
-from plants import BathTubPlant, CournotPlant, PopulationDynamicsPlant
 
 
 def run_one_timestep(params, plant, controller: Controller, target):
@@ -53,14 +48,13 @@ def main():
     
     print("====================================")
   
-  plt.plot(mse_epochs)
-  plt.show()
   if len(plot_params) > 1:
       plt.plot(plot_params)
       plt.legend(["Kp", "Ki", "Kd"])
       plt.xlabel("Epoch")
       plt.ylabel("Value")
       plt.show()
-
+  plt.plot(mse_epochs)
+  plt.show()
 if __name__ == "__main__":
   main()
