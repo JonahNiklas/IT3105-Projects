@@ -20,9 +20,10 @@ class PIDController(Controller):
 
 class NeuralNetController(Controller):
   
-    def __init__(self, activation_functions):
+    def __init__(self, activation_functions, output_activation_function):
         super().__init__()
         self.activation_functions = activation_functions
+        self.output_activation_function = output_activation_function
 
     def sigmoid(self, x):
         x = jnp.clip(x, -20, 20)  # Clip values to prevent overflow or underflow
@@ -39,13 +40,13 @@ class NeuralNetController(Controller):
         delta_error = error - self.error_history[-2] if len(self.error_history) > 1 else 0
 
         if isinstance(self.activation_functions, str):
-            self.activation_functions = [self.activation_functions] * len(parameters)
-        elif len(self.activation_functions) != len(parameters):
+            self.activation_functions = [self.activation_functions] * (len(parameters)-1)
+        elif len(self.activation_functions) != len(parameters)-1:
             raise ValueError("Invalid number of activation functions in config")
         
         activation = jnp.array([error, delta_error, sum(self.error_history)]).T
         
-        for activation_function, (weight, bias) in zip(self.activation_functions, parameters):
+        for activation_function, (weight, bias) in zip(self.activation_functions+[self.output_activation_function], parameters):
             if activation_function == "sigmoid":
                 activation = self.sigmoid(activation.dot(weight) + bias)
                 assert activation.shape[0] == 1
@@ -53,6 +54,8 @@ class NeuralNetController(Controller):
                 activation = self.tanh(activation.dot(weight) + bias)
             elif activation_function == "relu":
                 activation = self.relu(activation.dot(weight) + bias)
+            elif activation_function == "linear":
+                activation = activation.dot(weight) + bias
             else:
                 print(activation_function)
                 raise ValueError("Invalid activation function in config")

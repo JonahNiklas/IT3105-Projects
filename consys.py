@@ -69,7 +69,8 @@ def get_controller():
 
     elif CONTROLLER == "neural_net":
         controller = NeuralNetController(
-            activation_functions=NEURAL_NETWORK["activation_functions"]
+            activation_functions=NEURAL_NETWORK["activation_functions"],
+            output_activation_function=NEURAL_NETWORK["output_activation_function"],
         )
     else:
         raise ValueError("Invalid controller type in config")
