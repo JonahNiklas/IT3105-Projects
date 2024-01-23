@@ -72,7 +72,8 @@ class PopulationDynamicsPlant(Plant):
     def timestep(self, control_signal):
         crowding_factor = (1-self.population / self.carrying_capacity)
         disturbance = np.random.uniform(self.noise_range[0], self.noise_range[1])
-        self.population += self.population*crowding_factor*(self.birth_rate-self.death_rate+control_signal)+disturbance
+        growth_rate = self.birth_rate*crowding_factor*self.population 
+        self.population = jnp.maximum(0,self.population+disturbance+control_signal+growth_rate-self.death_rate*self.population)
 
     def get_output(self):
         return self.population
