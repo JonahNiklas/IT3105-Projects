@@ -38,11 +38,11 @@ class BathTubPlant(Plant):
 
 
 class CournotPlant(Plant):
-    def __init__(self, max_price, marginal_cost, q1, q2, noise_range):
+    def __init__(self, max_price, marginal_cost, initial_q1_q2, noise_range):
         self.max_price = max_price
         self.marginal_cost = marginal_cost
-        self.q1 = q1
-        self.q2 = q2
+        self.q1 = initial_q1_q2[0]
+        self.q2 = initial_q1_q2[1]
         self.noise_range = noise_range
 
     def price(self):
@@ -72,8 +72,8 @@ class PopulationDynamicsPlant(Plant):
     def timestep(self, control_signal):
         crowding_factor = (1-self.population / self.carrying_capacity)
         disturbance = np.random.uniform(self.noise_range[0], self.noise_range[1])
-        growth_rate = self.birth_rate*crowding_factor*self.population 
-        self.population = jnp.maximum(0,self.population+disturbance+control_signal+growth_rate-self.death_rate*self.population)
+        growth = (self.birth_rate*crowding_factor - self.death_rate)*self.population
+        self.population = jnp.maximum(0,self.population + disturbance + growth + control_signal)
 
     def get_output(self):
         return self.population

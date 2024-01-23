@@ -1,8 +1,9 @@
-PLANT = "bathub" # "bathtub" | "cournot" | "population"
+PLANT = "bathtub" # "bathtub" | "cournot" | "population"
 CONTROLLER = "neural_net" # "pid" | "neural_net
+PID_PARAM_RANGE = [0, 0.5]
 NEURAL_NETWORK = {
     "num_layers": 3,
-    "neurons_per_hidden_layer": [3, 3],
+    "neurons_per_hidden_layer": [3,3],
     "activation_functions": ["relu","relu"], # "sigmoid" | "tanh" | "relu"|"linear"
     "output_activation_function": "linear", 
     "weight_range": [-1, 1],
@@ -12,15 +13,18 @@ TRAINING_EPOCHS = 20
 SIMULATION_TIMESTEPS = 50
 LEARNING_RATE = 0.01
 NOISE_RANGE = [-0.01, 0.01]
-CROSS_SECTIONAL_AREA = {
-    "bathtub": 100,
-    "drain": 1
+
+BATHTUB = {
+    "cross_sectional_area": 100,
+    "drain_area": 1,
+    "initial_water_height": 100,
+    "target_water_height": 120,
 }
-INITIAL_WATER_HEIGHT = 100
 COURNOT_COMPETITION = {
     "max_price": 2,
     "marginal_cost": 0.1,
-    "target_profit": 2
+    "target_profit": 2,
+    "q1_q2_range": [0, 1]
 }
 POPULATION = {
     "initial_population": 100,
