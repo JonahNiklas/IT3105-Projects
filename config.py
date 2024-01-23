@@ -1,5 +1,5 @@
 PLANT = "bathtub" # "bathtub" | "cournot" | "population"
-CONTROLLER = "neural_net" # "pid" | "neural_net
+CONTROLLER = "pid" # "pid" | "neural_net
 PID_PARAM_RANGE = [0, 0.5]
 NEURAL_NETWORK = {
     "num_layers": 3,
