@@ -1,4 +1,4 @@
-PLANT = "population" # "bathtub" | "cournot" | "population"
+PLANT = "bathub" # "bathtub" | "cournot" | "population"
 CONTROLLER = "neural_net" # "pid" | "neural_net
 NEURAL_NETWORK = {
     "num_layers": 3,
