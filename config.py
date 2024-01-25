@@ -1,5 +1,5 @@
-PLANT = "bathtub" # "bathtub" | "cournot" | "population"
-CONTROLLER = "pid" # "pid" | "neural_net
+PLANT = "cournot" # "bathtub" | "cournot" | "population"
+CONTROLLER = "neural_net" # "pid" | "neural_net
 PID_PARAM_RANGE = [0, 0.5]
 NEURAL_NETWORK = {
     "num_layers": 3,
@@ -9,9 +9,9 @@ NEURAL_NETWORK = {
     "weight_range": [-1, 1],
     "bias_range": [-0.5, 0.5]
 }
-TRAINING_EPOCHS = 20
-SIMULATION_TIMESTEPS = 50
-LEARNING_RATE = 0.01
+TRAINING_EPOCHS = 30
+SIMULATION_TIMESTEPS = 20
+LEARNING_RATE = 0.005
 NOISE_RANGE = [-0.01, 0.01]
 
 BATHTUB = {
@@ -21,15 +21,15 @@ BATHTUB = {
     "target_water_height": 120,
 }
 COURNOT_COMPETITION = {
-    "max_price": 2,
+    "max_price": 4,
     "marginal_cost": 0.1,
     "target_profit": 2,
-    "q1_q2_range": [0, 1]
+    "q1_q2_range": [0.5, 0.5]
 }
 POPULATION = {
     "initial_population": 100,
     "target_population": 100,
     "birth_rate": 0.05,
-    "death_rate": 0.02,
+    "death_rate": 0.1,
     "carrying_capacity": 150
 }
