@@ -30,8 +30,10 @@ def main():
   mse_epochs = []
   params = get_params()
   plot_params = [params]
+  grad_func = jax.value_and_grad(run_one_epoch)
+  grad_func_jit = jax.jit(grad_func)
   for i in range(TRAINING_EPOCHS):
-    mse, gradients = jax.value_and_grad(run_one_epoch)(params)
+    mse, gradients = grad_func_jit(params)
     mse_item = mse.item()
     print(f"Epoch {i+1}")
     print(f"Params: {params}")
