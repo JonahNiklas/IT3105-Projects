@@ -1,4 +1,4 @@
-from config import (
+from project1.config import (
     BATHTUB,
     CONTROLLER,
     COURNOT_COMPETITION,    
@@ -10,8 +10,8 @@ from config import (
 )
 import numpy as np
 
-from controllers import NeuralNetController, PIDController
-from plants import BathTubPlant, CournotPlant, PopulationDynamicsPlant
+from project1.controllers import NeuralNetController, PIDController
+from project1.plants import BathTubPlant, CournotPlant, PopulationDynamicsPlant
 
 
 def get_params():
@@ -68,11 +68,8 @@ def get_plant():
         plant = CournotPlant(
             max_price=COURNOT_COMPETITION["max_price"],
             marginal_cost=COURNOT_COMPETITION["marginal_cost"],
-            initial_q1_q2=np.random.uniform(
-                COURNOT_COMPETITION["q1_q2_range"][0],
-                COURNOT_COMPETITION["q1_q2_range"][1],
-                2,
-            ),
+            initial_q1=COURNOT_COMPETITION["initial_q1"],
+            initial_q2=COURNOT_COMPETITION["initial_q2"],
             noise_range=NOISE_RANGE
         )
         target = COURNOT_COMPETITION["target_profit"]

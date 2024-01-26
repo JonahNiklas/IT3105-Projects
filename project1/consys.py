@@ -1,9 +1,9 @@
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from config import (LEARNING_RATE,SIMULATION_TIMESTEPS, TRAINING_EPOCHS)
-from controllers import Controller
-from helper import get_controller, get_params, get_plant
+from project1.config import (LEARNING_RATE,SIMULATION_TIMESTEPS, TRAINING_EPOCHS)
+from project1.controllers import Controller
+from project1.helper import get_controller, get_params, get_plant
 
 
 def run_one_timestep(params, plant, controller: Controller, target):
@@ -56,5 +56,6 @@ def main():
       plt.show()
   plt.plot(mse_epochs)
   plt.show()
+  
 if __name__ == "__main__":
   main()

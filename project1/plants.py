@@ -38,11 +38,11 @@ class BathTubPlant(Plant):
 
 
 class CournotPlant(Plant):
-    def __init__(self, max_price, marginal_cost, initial_q1_q2, noise_range):
+    def __init__(self, max_price, marginal_cost, initial_q1,initial_q2, noise_range):
         self.max_price = max_price
         self.marginal_cost = marginal_cost
-        self.q1 = initial_q1_q2[0]
-        self.q2 = initial_q1_q2[1]
+        self.q1 = initial_q1
+        self.q2 = initial_q2
         self.noise_range = noise_range
 
     def price(self):
