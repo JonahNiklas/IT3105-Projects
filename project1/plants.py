@@ -17,18 +17,12 @@ class BathTubPlant(Plant):
         self.area = area
         self.drain_area = drain_area
         self.noise_range = noise_range
-        self.water_level = (
-            water_level  # + np.random.uniform(self.noise_range[0],self.noise_range[1])
-        )
+        self.water_level = water_level
 
     def get_output(self):
-        # could also use derivative of water level
         return self.water_level
 
     def timestep(self, control_signal):
-        if self.water_level < 0:
-            print("Water level is negative, resetting to 0")
-            self.water_level = 0
         velocity = jnp.sqrt(2 * 9.81 * self.water_level)
         disturbance = np.random.uniform(self.noise_range[0], self.noise_range[1])
 
