@@ -1,3 +1,5 @@
+VERBOSE = False
+
 PLANT = "population" # "bathtub" | "cournot" | "population"
 CONTROLLER = "pid" # "pid" | "neural_net
 PID_PARAM_RANGE = [0, 0.5]
