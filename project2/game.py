@@ -21,6 +21,9 @@ class Game:
     def make_move(self, move) -> "Game":
         pass
 
+    def __eq__(self, __value: object) -> bool:
+        pass
+
 
 class HexGame(Game):
     def __init__(
@@ -191,6 +194,23 @@ class HexGame(Game):
                     queue.append((i, j))
                     visited.add((i, j))
         return False
+    
+    def make_distribution(self, children: List[Node]):
+        legal_moves = self.get_legal_moves()
+        distribution = np.zeros(self.size, self.size)
+        soft_max_sum = np.sum(np.exp([child.visits for child in children])) + (len(legal_moves) - len(children))
+        for child in children:
+            move = child.game_state.last_move
+            distribution[move[0], move[1]] = np.exp(child.visits)/soft_max_sum
+        for move in legal_moves:
+            if distribution[move[0], move[1]] == 0:
+                distribution[move[0], move[1]] = 1/soft_max_sum
+
+        return distribution
+        
+    
+    def __eq__(self, other):
+        return np.array_equal(self.board_state, other.board_state)
 
 
 if __name__ == "__main__":

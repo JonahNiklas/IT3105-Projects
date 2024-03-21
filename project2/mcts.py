@@ -5,10 +5,12 @@ import numpy as np
 class Node():
     def __init__(self, parent, game_state: Game) -> None:
         self.parent = parent
-        parent.add_child(self)
+        if parent is not None:
+            parent.add_child(self)
         self.game_state = game_state
         self.children = []
         self.visits = 0
+        self.value = 0
         self.Q = 0
     
     def is_leaf(self):
@@ -22,12 +24,15 @@ class Node():
 
     def set_to_root(self):
         self.parent = None
+    
+    def __eq__(self, other):
+        return self.game_state == other.game_state
 
 
 class MCTS():
-    def __init__(self, ANET) -> None:
-        self.ANET = ANET    
-        self.root = Node(None) 
+    def __init__(self, ANET,game_state: Game) -> None:
+        self.ANET = ANET
+        self.root = Node(None, game_state)
         
     def tree_policy(self):
         node = self.root
@@ -45,13 +50,29 @@ class MCTS():
     
     def uct(self, parent, child):
         assert child in parent.children
-        return self.Q(parent, child) + self.U(parent, child)
+        if parent.game_state.p1_turn:
+            return self.Q(parent, child) + self.U(parent, child)
+        return self.Q(parent, child) - self.U(parent, child)
     
-    def best_uct(self, node: Node):
-        possible_next_states = node.game_state.get_successor_states()
-        possible_next_states = [Node(node, state) for state in possible_next_states]
-        uct_values = [(child, self.uct(node, child)) for child in node.children]
-        return node.argmax(uct_values, key=lambda x: x[1])[0]
+    def best_uct(self, parent: Node):
+        unseen_value = self.U(parent, Node(None, None))
+        uct_values = [(child, self.uct(parent, child)) for child in parent.children]+[(None, unseen_value)]
+        if parent.game_state.p1_turn:
+            best_child, best_child_uct = np.argmax(uct_values, key=lambda x: x[1])
+        else:
+            best_child, best_child_uct = np.argmin(uct_values, key=lambda x: x[1])   
+        
+        if best_child is not None:
+            return best_child
+        
+        # Select random non-seen successor not in node.children
+        possible_next_states = parent.game_state.get_successor_states()
+        random_successor_state = np.random.choice(possible_next_states)
+        while Node(None, random_successor_state) in parent.children:
+            possible_next_states.remove(random_successor_state)
+            random_successor_state = np.random.choice(possible_next_states)
+        return Node(parent, random_successor_state)
+        
     
     def rollout(self, game_state: Game):
         while not game_state.is_terminal():
@@ -80,7 +101,14 @@ class MCTS():
             value = self.rollout(node.game_state)
             self.backpropagate(node, value)
             self.root.add_child(node)
-        return self.best_child(self.root)
+        
+        best_actual_move = self.best_child(self.root)
+        distribution = self.root.game_state.make_distribution(self.root.children)
+        self.new_root(best_actual_move)
+        return best_actual_move.game_state, distribution
+    
+    def best_child(self, node):
+        return np.argmax([(child.visits, child) for child in node.children], key=lambda x: x[0])[1]
         
     def new_root(self,node):
         node.set_to_root()
