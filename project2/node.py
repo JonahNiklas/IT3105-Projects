@@ -1,8 +1,9 @@
+
 from project2.game import Game
 
 
 class Node():
-    def __init__(self, parent, game_state: Game) -> None:
+    def __init__(self, parent: 'Node', game_state: 'Game') -> None:
         self.parent = parent
         if parent is not None:
             parent.add_child(self)
@@ -10,7 +11,6 @@ class Node():
         self.children = []
         self.visits = 0
         self.value = 0
-        self.Q = 0
     
     def is_leaf(self):
         return len(self.children) == 0

@@ -7,7 +7,7 @@ RBUF = []
 ANET = NeuralNetwork() 
 
 for i in range(1, NUMBER_OF_EPISODES + 1):
-    game = HexGame(BOARD_SIZE)
+    game = HexGame(size=BOARD_SIZE, last_move=None)
     mcts = MCTS(ANET=ANET, game_state=game)
     while not game.is_terminal():
         new_game, distribution = mcts.search()

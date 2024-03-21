@@ -2,9 +2,12 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class Game:
     def __init__(self):
-        raise NotImplementedError("Game is an abstract class and cannot be instantiated")
+        raise NotImplementedError(
+            "Game is an abstract class and cannot be instantiated"
+        )
 
     def visualize_board(self):
         pass
@@ -18,6 +21,9 @@ class Game:
     def is_terminal(self):
         pass
 
+    def get_winner(self):
+        pass
+
     def make_move(self, move) -> "Game":
         pass
 
@@ -29,6 +35,7 @@ class HexGame(Game):
     def __init__(
         self,
         size,
+        last_move,
         p1_encoding=1,
         p2_encoding=-1,
         empty_encoding=0,
@@ -46,22 +53,25 @@ class HexGame(Game):
         self.p2_encoding = p2_encoding
         self.empty_encoding = empty_encoding
         self.p1_turn = p1_turn
+        self.last_move = last_move
 
     def make_move(self, move) -> "HexGame":
         assert len(move) == 2
         assert self.board_state[move[0], move[1]] == self.empty_encoding
         new_board_state = self.board_state.copy()
         new_board = HexGame(
-            self.size,
-            self.p1_encoding,
-            self.p2_encoding,
-            self.empty_encoding,
-            new_board_state,
-            self.p1_turn,
+            size=self.size,
+            last_move=move,
+            p1_encoding=self.p1_encoding,
+            p2_encoding=self.p2_encoding,
+            empty_encoding=self.empty_encoding,
+            board_state=new_board_state,
+            p1_turn=self.p1_turn,
         )
         new_board.board_state[move[0], move[1]] = (
             self.p1_encoding if self.p1_turn else self.p2_encoding
         )
+        new_board.last_move = move
         new_board.p1_turn = not self.p1_turn
         return new_board
 
@@ -122,20 +132,22 @@ class HexGame(Game):
     def get_legal_moves(self):
         return np.argwhere(self.board_state == self.empty_encoding)
 
-    def get_successor_states(self, player_encoding):
+    def get_successor_states(self):
+        player_encoding = self.p1_encoding if self.p1_turn else self.p2_encoding
         legal_moves = self.get_legal_moves()
         successor_states = []
         for move in legal_moves:
-            board_state = self.board_board_state.copy()
+            board_state = self.board_state.copy()
             board_state[move[0], move[1]] = player_encoding
             successor_states.append(
                 HexGame(
-                    self.size,
-                    self.p1_encoding,
-                    self.p2_encoding,
-                    self.empty_encoding,
-                    board_state,
-                    not self.p1_turn,
+                    size=self.size,
+                    last_move=move,
+                    p1_encoding=self.p1_encoding,
+                    p2_encoding=self.p2_encoding,
+                    empty_encoding=self.empty_encoding,
+                    board_state=board_state,
+                   p1_turn= not self.p1_turn,
                 )
             )
         return successor_states
@@ -157,7 +169,7 @@ class HexGame(Game):
                     if self.bfs(i, 0, player_encoding):
                         return True
         return False
-    
+
     def get_winner(self):
         if self.check_winner(self.p1_encoding):
             return self.p1_encoding
@@ -197,21 +209,22 @@ class HexGame(Game):
 
     def get_state(self):
         return self.board_state.copy()
-    
+
     def make_distribution(self, children: List):
         legal_moves = self.get_legal_moves()
-        distribution = np.zeros(self.size, self.size)
-        soft_max_sum = np.sum(np.exp([child.visits for child in children])) + (len(legal_moves) - len(children))
+        distribution = np.zeros((self.size, self.size))
+        soft_max_sum = np.sum(np.exp([child.visits for child in children])) + (
+            len(legal_moves) - len(children)
+        )
         for child in children:
             move = child.game_state.last_move
-            distribution[move[0], move[1]] = np.exp(child.visits)/soft_max_sum
+            distribution[move[0], move[1]] = np.exp(child.visits) / soft_max_sum
         for move in legal_moves:
             if distribution[move[0], move[1]] == 0:
-                distribution[move[0], move[1]] = 1/soft_max_sum
+                distribution[move[0], move[1]] = 1 / soft_max_sum
 
         return distribution
-        
-    
+
     def __eq__(self, other):
         return np.array_equal(self.board_state, other.board_state)
 
@@ -220,7 +233,7 @@ if __name__ == "__main__":
     # Test is_terminal
     game = [[1, 1, 0], [-1, -1, -1], [0, 0, 0]]
     game = np.array(game)
-    hex_game = HexGame(3,board_state=game)
+    hex_game = HexGame(3, board_state=game)
     assert hex_game.is_terminal() == True
     assert hex_game.get_winner() == -1
 
@@ -234,14 +247,14 @@ if __name__ == "__main__":
         [-1, 0, 0, 0, 0, 0, 0],
     ]
     game = np.array(game)
-    hex_game = HexGame(7,board_state=game)
+    hex_game = HexGame(7, board_state=game)
     print(hex_game.get_legal_moves())
     assert hex_game.is_terminal() == True
     assert hex_game.get_winner() == -1
-    
+
     game = np.rot90(game, k=1)
     print(game)
-    hex_game = HexGame(7,board_state=game)
+    hex_game = HexGame(7, board_state=game)
     assert hex_game.is_terminal() == False
     assert hex_game.get_winner() == 0
 
