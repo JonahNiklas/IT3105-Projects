@@ -1,6 +1,6 @@
+from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
-
 
 class Game:
     def __init__(self):
@@ -194,8 +194,11 @@ class HexGame(Game):
                     queue.append((i, j))
                     visited.add((i, j))
         return False
+
+    def get_state(self):
+        return self.board_state.copy()
     
-    def make_distribution(self, children: List[Node]):
+    def make_distribution(self, children: List):
         legal_moves = self.get_legal_moves()
         distribution = np.zeros(self.size, self.size)
         soft_max_sum = np.sum(np.exp([child.visits for child in children])) + (len(legal_moves) - len(children))

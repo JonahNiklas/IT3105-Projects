@@ -1,5 +1,5 @@
 import torch
-from globals import (
+from project2.globals import (
     BOARD_SIZE,
     ANET_LEARNING_RATE,
     ANET_NUM_HIDDEN_LAYERS,
@@ -53,5 +53,25 @@ class NeuralNetwork(torch.nn.Module):
         assert logits.shape == (batch_size, BOARD_SIZE * BOARD_SIZE)
         logits = logits.view(batch_size, BOARD_SIZE, BOARD_SIZE)
         return logits
+    
+    def train_one_batch(self, X, Y):
+        assert len(X) == len(Y)
+        dataloader = torch.utils.data.DataLoader(list(zip(X, Y)), batch_size=ANET_BATCH_SIZE, shuffle=True)
+        if ANET_OPTIMIZER == "adagrad":
+            optimizer = torch.optim.Adagrad(self.parameters(), lr=ANET_LEARNING_RATE)
+        elif ANET_OPTIMIZER == "sgd":
+            optimizer = torch.optim.SGD(self.parameters(), lr=ANET_LEARNING_RATE)
+        elif ANET_OPTIMIZER == "adam":
+            optimizer = torch.optim.Adam(self.parameters(), lr=ANET_LEARNING_RATE)
+        elif ANET_OPTIMIZER == "rmsprop":
+            optimizer = torch.optim.RMSprop(self.parameters(), lr=ANET_LEARNING_RATE)
+        x, y = next(iter(dataloader))
+        x = torch.tensor(x, dtype=torch.float32)
+        y = torch.tensor(y, dtype=torch.float32)
+        optimizer.zero_grad()
+        output = self(x)
+        loss = torch.nn.functional.mse_loss(output, y)
+        loss.backward()
+        optimizer.step()
     
 

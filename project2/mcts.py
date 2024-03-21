@@ -1,36 +1,12 @@
 from project2.game import Game
 from project2.globals import MCTS_C, MCTS_ROLLOUT_EPSILON, NUMBER_OF_SIMULATIONS
 import numpy as np
-
-class Node():
-    def __init__(self, parent, game_state: Game) -> None:
-        self.parent = parent
-        if parent is not None:
-            parent.add_child(self)
-        self.game_state = game_state
-        self.children = []
-        self.visits = 0
-        self.value = 0
-        self.Q = 0
-    
-    def is_leaf(self):
-        return len(self.children) == 0
-    
-    def is_root(self):
-        return self.parent is None
-    
-    def add_child(self, node):
-        self.children.append(node)
-
-    def set_to_root(self):
-        self.parent = None
-    
-    def __eq__(self, other):
-        return self.game_state == other.game_state
-
+from project2.neural_network import NeuralNetwork
+from project2.node import Node
+import torch
 
 class MCTS():
-    def __init__(self, ANET,game_state: Game) -> None:
+    def __init__(self, ANET: NeuralNetwork, game_state: Game) -> None:
         self.ANET = ANET
         self.root = Node(None, game_state)
         
@@ -39,7 +15,6 @@ class MCTS():
         while not node.is_leaf():
             parent = node
             node = self.best_uct(node)
-        parent.add_child(node)
         return node
     
     def U(self, parent, child):
@@ -58,9 +33,9 @@ class MCTS():
         unseen_value = self.U(parent, Node(None, None))
         uct_values = [(child, self.uct(parent, child)) for child in parent.children]+[(None, unseen_value)]
         if parent.game_state.p1_turn:
-            best_child, best_child_uct = np.argmax(uct_values, key=lambda x: x[1])
+            best_child, best_child_uct = max(uct_values, key=lambda x: x[1])
         else:
-            best_child, best_child_uct = np.argmin(uct_values, key=lambda x: x[1])   
+            best_child, best_child_uct = min(uct_values, key=lambda x: x[1])   
         
         if best_child is not None:
             return best_child
@@ -76,15 +51,18 @@ class MCTS():
     
     def rollout(self, game_state: Game):
         while not game_state.is_terminal():
-            logits = self.ANET(game_state)
-            free_spots = np.where(game_state.board_state == 0)
-            logits[~free_spots] = 0
+            input = game_state.get_state()
+            input = torch.tensor(input, dtype=torch.float32).unsqueeze(0)
+            logits = self.ANET(input)
+            logits = logits.detach().numpy().squeeze()
+            logits = np.where(game_state.board_state == 0, logits, 0)
             # Renormalize
             logits = logits / logits.sum()
             if np.random.rand() < MCTS_ROLLOUT_EPSILON:
-                move = np.random.choice(game_state.get_legal_moves())
+                legal_moves = game_state.get_legal_moves()
+                return legal_moves[np.random.choice(len(legal_moves))]
             else:
-                move = np.argmax(logits)
+                move = np.unravel_index(np.argmax(logits), logits.shape)
             game_state = game_state.make_move(move)
 
         return game_state.value
@@ -95,9 +73,10 @@ class MCTS():
             node.value += value
             node = node.parent
 
-    def search(self, state: Game):
+    def search(self):
         for i in range(NUMBER_OF_SIMULATIONS):
-            node = self.tree_policy(state)
+            print(f"Simulation {i}")
+            node = self.tree_policy()
             value = self.rollout(node.game_state)
             self.backpropagate(node, value)
             self.root.add_child(node)
@@ -113,3 +92,31 @@ class MCTS():
     def new_root(self,node):
         node.set_to_root()
         self.root = node
+
+if __name__ == "__main__":
+    board = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 0]
+    ]
+    board = np.array(board)
+    logits = np.array([
+        [0.1, 0.2, 0.3],
+        [0.4, 0.5, 0.6],
+        [0.7, 0.8, 0.9]
+    ])
+    logits = np.where(board == 0.0, logits, 0)
+    assert board.shape == (3, 3)
+    # logits = np.ma.filled(np.ma.masked_array(logits, mask=taken_spots), fill_value=0)
+    # print(taken_spots)
+    print()
+    print(logits)
+    assert np.array_equal(logits, np.array([
+        [0.0, 0.2, 0.3],
+        [0.4, 0.0, 0.6],
+        [0.7, 0.8, 0.9]
+    ]))
+
+
+    print("All tests passed!")
+
