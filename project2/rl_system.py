@@ -9,10 +9,12 @@ ANET = NeuralNetwork()
 for i in range(1, NUMBER_OF_EPISODES + 1):
     game = HexGame(size=BOARD_SIZE, last_move=None)
     mcts = MCTS(ANET=ANET, game_state=game)
+    move_num = 0
     while not game.is_terminal():
         new_game, distribution = mcts.search()
         RBUF.append((game, distribution))
-        print("Made actual move")
+        move_num += 1
+        print(f"Made actual move {move_num} of {BOARD_SIZE**2} possible", end="\r")
         game = new_game
     X = [game.get_state() for game, _ in RBUF]
     Y = [distribution for _, distribution in RBUF]

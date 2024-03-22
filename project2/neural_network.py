@@ -74,4 +74,9 @@ class NeuralNetwork(torch.nn.Module):
         loss.backward()
         optimizer.step()
     
+    def save(self, i, path="saved_networks"):
+        import os
+        if not os.path.exists(path):
+            os.makedirs(path)
+        torch.save(self.state_dict(), f"{path}/anet_{i}.pt")
 

@@ -1,12 +1,12 @@
-BOARD_SIZE = 9
-NUMBER_OF_EPISODES = 1000
-NUMBER_OF_SIMULATIONS = 10
+BOARD_SIZE = 5
+NUMBER_OF_EPISODES = 50 # actual games
+NUMBER_OF_SIMULATIONS = 10 # MCTS simulations per move
 
 # ANET
 ANET_LEARNING_RATE = 0.01
-ANET_NUM_HIDDEN_LAYERS = 3
-ANET_NUM_HIDDEN_NODES = 50
-ANET_ACTIVATION_FUNCTION = 'tanh' # linear, sigmoid, tanh, relu
+ANET_NUM_HIDDEN_LAYERS = 7
+ANET_NUM_HIDDEN_NODES = 100
+ANET_ACTIVATION_FUNCTION = 'relu' # linear, sigmoid, tanh, relu
 ANET_OPTIMIZER = 'adam' # adagrad, sgd, adam, rmsprop
 ANET_M = 10 # number of ANETs to be cached 
 ANET_BATCH_SIZE = 128

@@ -5,17 +5,23 @@ from project2.neural_network import NeuralNetwork
 from project2.node import Node
 import torch
 
+np.seterr(all="raise")
 
 class MCTS:
     def __init__(self, ANET: NeuralNetwork, game_state: Game) -> None:
         self.ANET = ANET
         self.root = Node(None, game_state)
+        self.root.visits = 1
 
     def tree_policy(self):
         node = self.root
-        while (not node.is_leaf()) or (node == self.root):
+        assert not node.game_state.is_terminal()
+        while not node.is_leaf():
             parent = node
             node = self.best_uct(node)
+            if node.game_state.is_terminal():
+                return node
+        node = self.best_uct(node)
         return node
 
     def U(self, parent: Node, child: Node):
@@ -30,30 +36,41 @@ class MCTS:
         return self.Q(parent, child) - self.U(parent, child)
 
     def best_uct(self, parent: Node):
+        # Need to know if all children have been expanded
+        num_legal_moves = len(parent.game_state.get_legal_moves())
         unseen_value = self.uct(parent, Node(None, None))
-        uct_values = [(child, self.uct(parent, child)) for child in parent.children] + [
-            (None, unseen_value)
-        ]
+        uct_values = [(child, self.uct(parent, child)) for child in parent.children]
+        # If all children have been expanded, dont add unseen_value
+        if len(uct_values) < num_legal_moves:
+            uct_values = uct_values + [(None, unseen_value)]
         if parent.game_state.p1_turn:
             best_child, best_child_uct = max(uct_values, key=lambda x: x[1])
         else:
             best_child, best_child_uct = min(uct_values, key=lambda x: x[1])
-
+        
+        # Best child is a explored node
         if best_child is not None:
             return best_child
 
+        # Explore unseen node
+        successor_states = parent.game_state.get_successor_states()
         # Select random non-seen successor not in node.children
-        possible_next_states = parent.game_state.get_successor_states()
-        random_successor_state = np.random.choice(possible_next_states)
-        while Node(None, random_successor_state) in parent.children:
-            possible_next_states.remove(random_successor_state)
-            random_successor_state = np.random.choice(possible_next_states)
-        return Node(parent, random_successor_state)
+        possible_next_states = [
+            state
+            for state in successor_states
+            if Node(None, state) not in parent.children
+        ]
+        assert len(possible_next_states) > 0
+        return Node(parent, np.random.choice(possible_next_states))
 
     def rollout(self, leaf_node: Node):
         game_state = leaf_node.game_state
         while not game_state.is_terminal():
-            input = game_state.get_state()
+            # TODO: if opponents turn, play the best move for the opponent
+            if game_state.p1_turn:
+                input = game_state.board_state
+            else:
+                input = game_state.get_inverted_board_state()
             input = torch.tensor(input, dtype=torch.float32).unsqueeze(0)
             logits = self.ANET(input)
             logits = logits.detach().numpy().squeeze()
@@ -76,7 +93,6 @@ class MCTS:
 
     def search(self):
         for i in range(1, NUMBER_OF_SIMULATIONS + 1):
-            print(f"Simulation {i}")
             node = self.tree_policy()
             result = self.rollout(node)
             self.backpropagate(node, result)
