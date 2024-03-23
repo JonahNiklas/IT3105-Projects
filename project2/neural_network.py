@@ -11,6 +11,8 @@ from project2.globals import (
     EXPERIMENT_NAME,
 )
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device {device}")
 
 class NeuralNetwork(torch.nn.Module):
     def __init__(self):
@@ -44,6 +46,7 @@ class NeuralNetwork(torch.nn.Module):
             else:
                 raise ValueError("Invalid activation function")
         self.softmax = torch.nn.Softmax(dim=1)
+        self.to(device)
 
     def forward(self, x):
         batch_size = x.shape[0]
@@ -57,7 +60,7 @@ class NeuralNetwork(torch.nn.Module):
     
     def train_one_batch(self, X, Y):
         assert len(X) == len(Y)
-        X, Y = torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.float32)
+        X, Y = torch.tensor(X, dtype=torch.float32).to(device), torch.tensor(Y, dtype=torch.float32).to(device)
         dataloader = torch.utils.data.DataLoader(list(zip(X, Y)), batch_size=ANET_BATCH_SIZE, shuffle=True)
         if ANET_OPTIMIZER == "adagrad":
             optimizer = torch.optim.Adagrad(self.parameters(), lr=ANET_LEARNING_RATE)

@@ -1,7 +1,7 @@
 from project2.game import Game
 from project2.globals import MCTS_C, MCTS_ROLLOUT_EPSILON, NUMBER_OF_SIMULATIONS, VERBOSE
 import numpy as np
-from project2.neural_network import NeuralNetwork
+from project2.neural_network import NeuralNetwork, device
 from project2.node import Node
 import torch
 
@@ -73,9 +73,9 @@ class MCTS:
         while not game_state.is_terminal():
             # if opponents turn, play the best move for the opponent
             input = game_state.get_nn_input()
-            input = torch.tensor(input, dtype=torch.float32).unsqueeze(0)
+            input = torch.tensor(input, dtype=torch.float32).unsqueeze(0).to(device)
             logits = self.ANET(input)
-            logits = logits.detach().numpy().squeeze()
+            logits = logits.detach().cpu().numpy().squeeze()
             logits = np.where(game_state.board_state == 0, logits, 0)
             # Renormalize
             logits = logits / logits.sum()
