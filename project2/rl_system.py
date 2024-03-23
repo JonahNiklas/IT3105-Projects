@@ -14,7 +14,7 @@ if VISUALIZE:
 
 
 RBUF = []
-ANET = NeuralNetwork() 
+ANET = NeuralNetwork()
 
 for i in tqdm(range(1, NUMBER_OF_EPISODES + 1)):
     game = HexGame(size=BOARD_SIZE, last_move=None)
