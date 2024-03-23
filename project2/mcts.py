@@ -96,7 +96,7 @@ class MCTS:
             node.value += value
             node = node.parent
 
-    def search(self):
+    def search(self) -> tuple[Game, np.ndarray]:
         for i in range(1, NUMBER_OF_SIMULATIONS + 1):
             node = self.tree_policy()
             result = self.rollout(node)

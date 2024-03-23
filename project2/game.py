@@ -2,6 +2,7 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.ion()
 
 class Game:
     def __init__(self):
@@ -84,9 +85,9 @@ class HexGame(Game):
         return new_board_state_empty + new_board_state_p1 + new_board_state_p2
 
     def visualize_board(
-        self, p1_color="red", p2_color="blue", face_color="white", edge_color="black"
+        self, ax, p1_color="red", p2_color="blue", face_color="white", edge_color="black"
     ):
-
+        ax.clear()
         board_size = self.size
 
         # Create a hexagon function
@@ -98,7 +99,6 @@ class HexGame(Game):
             ]
 
         # Create the board
-        fig, ax = plt.subplots(1)
         ax.set_aspect("equal")
         ax.axis("off")
 
@@ -106,11 +106,18 @@ class HexGame(Game):
         x_offset = 1.5
         y_offset = np.sqrt(3)
 
-        board_state = np.rot90(self.board_state, k=2)
+        board_state = self.board_state.copy()
+        # Surrond the board with colored hexagons
+        # to indicate the two sides to connect
+        p1_side = np.array([self.p1_encoding] * (board_size + 2)).reshape(1, -1)
+        p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
+        board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
+        board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
 
+        board_state = np.rot90(board_state, k=2)
         # Draw the hexagons
-        for x in range(board_size):
-            for y in range(board_size):
+        for x in range(len(board_state)):
+            for y in range(len(board_state)):
                 center = (x * x_offset, (y + x / 2) * y_offset)
                 hex_path = hexagon(center, 1)
                 ax.fill(
@@ -127,15 +134,11 @@ class HexGame(Game):
                         )
                     ),
                 )
-                ax.fill(
-                    hex_path[-1:, 0],
-                    hex_path[-1:, 1],
-                    edgecolor=edge_color,
-                    facecolor="red",
-                )
 
-        plt.gca().invert_xaxis()
-        plt.show()
+
+        ax.invert_xaxis()
+        plt.draw()
+        plt.pause(0.1)
 
     def get_legal_moves(self):
         return np.argwhere(self.board_state == self.empty_encoding)
