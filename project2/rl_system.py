@@ -4,6 +4,7 @@ from project2.mcts import MCTS
 from project2.neural_network import NeuralNetwork
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 if VISUALIZE:
     fig, ax = plt.subplots(1)
@@ -15,7 +16,7 @@ if VISUALIZE:
 RBUF = []
 ANET = NeuralNetwork() 
 
-for i in range(1, NUMBER_OF_EPISODES + 1):
+for i in tqdm(range(1, NUMBER_OF_EPISODES + 1)):
     game = HexGame(size=BOARD_SIZE, last_move=None)
     mcts = MCTS(ANET=ANET, game_state=game)
     move_num = 0
@@ -26,7 +27,7 @@ for i in range(1, NUMBER_OF_EPISODES + 1):
         print(f"Made actual move {move_num} of {BOARD_SIZE**2} possible", end="\r")
         game = new_game
         if VISUALIZE: game.visualize_board(ax)
-    if VISUALIZE: print(f"Player {game.get_winner()} won the game")
+    if VISUALIZE: print(f"Game {i}: Player {game.get_winner()} won the game")
     X = np.array([game.get_nn_input() for game, _ in RBUF])
     Y = np.array([distribution for _, distribution in RBUF])
     

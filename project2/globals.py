@@ -3,7 +3,7 @@ VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 11
 NUMBER_OF_EPISODES = 1000 # actual games
-NUMBER_OF_SIMULATIONS = 100 # MCTS simulations per move
+NUMBER_OF_SIMULATIONS = 10 # MCTS simulations per move
 
 # ANET
 ANET_LEARNING_RATE = 0.01
