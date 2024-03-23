@@ -1,3 +1,4 @@
+VERBOSE = False
 BOARD_SIZE = 5
 NUMBER_OF_EPISODES = 50 # actual games
 NUMBER_OF_SIMULATIONS = 10 # MCTS simulations per move

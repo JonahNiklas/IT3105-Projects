@@ -56,6 +56,7 @@ class NeuralNetwork(torch.nn.Module):
     
     def train_one_batch(self, X, Y):
         assert len(X) == len(Y)
+        X, Y = torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.float32)
         dataloader = torch.utils.data.DataLoader(list(zip(X, Y)), batch_size=ANET_BATCH_SIZE, shuffle=True)
         if ANET_OPTIMIZER == "adagrad":
             optimizer = torch.optim.Adagrad(self.parameters(), lr=ANET_LEARNING_RATE)
@@ -66,8 +67,6 @@ class NeuralNetwork(torch.nn.Module):
         elif ANET_OPTIMIZER == "rmsprop":
             optimizer = torch.optim.RMSprop(self.parameters(), lr=ANET_LEARNING_RATE)
         x, y = next(iter(dataloader))
-        x = torch.tensor(x, dtype=torch.float32)
-        y = torch.tensor(y, dtype=torch.float32)
         optimizer.zero_grad()
         output = self(x)
         loss = torch.nn.functional.mse_loss(output, y)

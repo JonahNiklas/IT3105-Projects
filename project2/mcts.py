@@ -1,5 +1,5 @@
 from project2.game import Game
-from project2.globals import MCTS_C, MCTS_ROLLOUT_EPSILON, NUMBER_OF_SIMULATIONS
+from project2.globals import MCTS_C, MCTS_ROLLOUT_EPSILON, NUMBER_OF_SIMULATIONS, VERBOSE
 import numpy as np
 from project2.neural_network import NeuralNetwork
 from project2.node import Node
@@ -21,7 +21,8 @@ class MCTS:
             node = self.best_uct(node)
             if node.game_state.is_terminal():
                 return node
-        node = self.best_uct(node)
+        if node.visits > 0:
+            node = self.best_uct(node)
         return node
 
     def U(self, parent: Node, child: Node):
@@ -50,8 +51,10 @@ class MCTS:
         
         # Best child is a explored node
         if best_child is not None:
+            if VERBOSE: print("Selecting previously explored node")
             return best_child
 
+        if VERBOSE: print("Selecting unseen node")
         # Explore unseen node
         successor_states = parent.game_state.get_successor_states()
         # Select random non-seen successor not in node.children
@@ -63,8 +66,10 @@ class MCTS:
         assert len(possible_next_states) > 0
         return Node(parent, np.random.choice(possible_next_states))
 
-    def rollout(self, leaf_node: Node):
-        game_state = leaf_node.game_state
+    def rollout(self, node: Node):
+        if VERBOSE: print(f"Rollout from {node}")
+        assert node.parent.visits > 0
+        game_state = node.game_state
         while not game_state.is_terminal():
             # TODO: if opponents turn, play the best move for the opponent
             if game_state.p1_turn:
