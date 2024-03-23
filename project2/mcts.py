@@ -71,11 +71,8 @@ class MCTS:
         assert node.parent.visits > 0
         game_state = node.game_state
         while not game_state.is_terminal():
-            # TODO: if opponents turn, play the best move for the opponent
-            if game_state.p1_turn:
-                input = game_state.board_state
-            else:
-                input = game_state.get_inverted_board_state()
+            # if opponents turn, play the best move for the opponent
+            input = game_state.get_nn_input()
             input = torch.tensor(input, dtype=torch.float32).unsqueeze(0)
             logits = self.ANET(input)
             logits = logits.detach().numpy().squeeze()

@@ -8,6 +8,7 @@ from project2.globals import (
     ANET_OPTIMIZER,
     ANET_M,
     ANET_BATCH_SIZE,
+    EXPERIMENT_NAME,
 )
 
 
@@ -77,5 +78,5 @@ class NeuralNetwork(torch.nn.Module):
         import os
         if not os.path.exists(path):
             os.makedirs(path)
-        torch.save(self.state_dict(), f"{path}/anet_{i}.pt")
+        torch.save(self.state_dict(), f"{path}/{EXPERIMENT_NAME}_anet_{i}.pt")
 

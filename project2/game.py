@@ -28,7 +28,7 @@ class Game:
     def make_move(self, move) -> "Game":
         pass
 
-    def get_inverted_board_state(self) -> "Game":
+    def get_nn_input(self) -> "Game":
         pass
 
     def __eq__(self, __value: object) -> bool:
@@ -77,7 +77,10 @@ class HexGame(Game):
         )
         return new_board
 
-    def get_inverted_board_state(self):
+    def get_nn_input(self):
+        if self.p1_turn:
+            return self.board_state.copy()
+        
         new_board_state_p1 = np.where(self.board_state == self.p1_encoding, self.p2_encoding, 0)
         new_board_state_p2 = np.where(self.board_state == self.p2_encoding, self.p1_encoding, 0)
         new_board_state_empty = np.where(self.board_state == self.empty_encoding, self.empty_encoding, 0)

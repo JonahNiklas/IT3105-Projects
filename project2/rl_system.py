@@ -27,7 +27,7 @@ for i in range(1, NUMBER_OF_EPISODES + 1):
         game = new_game
         if VISUALIZE: game.visualize_board(ax)
     if VISUALIZE: print(f"Player {game.get_winner()} won the game")
-    X = np.array([game.get_state() for game, _ in RBUF])
+    X = np.array([game.get_nn_input() for game, _ in RBUF])
     Y = np.array([distribution for _, distribution in RBUF])
     
     ANET.train_one_batch(X, Y)

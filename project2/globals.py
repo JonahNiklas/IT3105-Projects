@@ -1,8 +1,9 @@
+EXPERIMENT_NAME = "feedforward1"
 VERBOSE = False
-VISUALIZE = True
-BOARD_SIZE = 9
-NUMBER_OF_EPISODES = 50 # actual games
-NUMBER_OF_SIMULATIONS = 10 # MCTS simulations per move
+VISUALIZE = False
+BOARD_SIZE = 11
+NUMBER_OF_EPISODES = 1000 # actual games
+NUMBER_OF_SIMULATIONS = 100 # MCTS simulations per move
 
 # ANET
 ANET_LEARNING_RATE = 0.01
