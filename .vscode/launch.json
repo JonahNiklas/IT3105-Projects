@@ -17,6 +17,12 @@
             "module": "project2.topp"
         },
         {
+            "name": "supervised",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "project2.supervised"
+        },
+        {
             "name": "tests mcts",
             "type": "debugpy",
             "request": "launch",

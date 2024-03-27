@@ -1,7 +1,7 @@
 EXPERIMENT_NAME = "feedforward1"
 VERBOSE = False
 VISUALIZE = False
-BOARD_SIZE = 11
+BOARD_SIZE = 13
 NUMBER_OF_EPISODES = 500  # actual games
 NUMBER_OF_SIMULATIONS = 50  # MCTS simulations per move
 
