@@ -29,3 +29,19 @@ Checking that the model learned something by plotting the results of making the 
 ![feedforward1](figs/feedforward1_topp_results.png)
 
 We unfortunately see a negative correlation between training time and performance. There is likely a bug in the training code. Also, the board is so large (11) that the model might find it hard to learn.
+
+## Experiment 2 - Smaller board size
+
+In hope that the model would be able to learn better on a smaller board, we try the same hyperparameters as in Experiment 1, but with a board size of 5.
+
+| Parameter       | Value |
+| --------------- | ----- |
+| EXPERIMENT_NAME | small |
+| BOARD_SIZE      | 5     |
+
+### Experiment 2 Results:
+
+![small](figs/small_topp_results_20240327160604.png)
+
+The model was not able to learn and we saw a clear negative correlation between training time and performance. The model is seeing some change, but in the wrong direction.
+

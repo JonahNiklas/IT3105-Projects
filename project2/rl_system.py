@@ -24,30 +24,24 @@ def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
     while game_num.value < NUMBER_OF_EPISODES:
         game = HexGame(size=BOARD_SIZE, last_move=None)
         mcts = MCTS(ANET=ANET, game_state=game)
-        move_num = 0
         local_RBUF = []
         while not game.is_terminal():
             new_game, distribution = mcts.search()
             local_RBUF.append((game, distribution))
-            move_num += 1
-            # print(
-            #     f"Process {process_id}\tMade actual move {move_num} of {BOARD_SIZE**2} possible",
-            #     end="\r",
-            # )
             game = new_game
             if VISUALIZE:
                 game.visualize_board(ax)
         with game_num_lock:
             game_num.value += 1
             if game_num.value % (NUMBER_OF_EPISODES // ANET_M) == 0:
-                ANET.save(i)
+                ANET.save(game_num.value)
         if VISUALIZE:
             print(f"Process {process_id}\tGame {game_num.value}: Player {game.get_winner()} won the game")
 
         with RBUF_lock:
             RBUF.extend(local_RBUF)
-        X = np.array([game.get_nn_input() for game, _ in RBUF])
-        Y = np.array([distribution for _, distribution in RBUF])
+            X = np.array([game.get_nn_input() for game, _ in RBUF])
+            Y = np.array([distribution for _, distribution in RBUF])
 
         ANET.train_one_batch(X, Y)
 

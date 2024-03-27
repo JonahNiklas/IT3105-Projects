@@ -18,7 +18,7 @@ for filename in os.listdir(folder_path):
         network_path = os.path.join(folder_path, filename)
         network = NeuralNetwork()
         network.load_state_dict(torch.load(network_path))
-        ANETS[filename.split(EXPERIMENT_NAME + "_")[1]] = network
+        ANETS[filename.replace(EXPERIMENT_NAME + "_", "")] = network
 
 num_nets = len(ANETS)
 wins = {}
@@ -40,9 +40,9 @@ def play_a_game(ANET1, ANET2):
 
         nn_input = torch.tensor(game.get_nn_input()).float().unsqueeze(0)
         if game.p1_turn:
-            logits = ANET1(nn_input).detach().numpy()
+            logits = ANET1(nn_input).detach().cpu().numpy()
         else:
-            logits = ANET2(nn_input).detach().numpy()
+            logits = ANET2(nn_input).detach().cpu().numpy()
         logits = game.mask_illegal_indexes(logits)
 
         move = np.argmax(logits)
@@ -66,9 +66,9 @@ def play_a_round(ANET1, ANET2, G):
 with tqdm(total=rounds, desc="TOPP Progress") as pbar:
     for i, (filename1, ANET1) in enumerate(ANETS.items()):
         for j, (filename2, ANET2) in enumerate(ANETS.items()):
-            if i < j:
+            if i != j:
                 wins_p1, wins_p2 = play_a_round(
-                    ANET1, ANET2, TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS)
+                    ANET1, ANET2, TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS // 2)
                 wins[filename1] += wins_p1
                 wins[filename2] += wins_p2
                 pbar.update(1)
@@ -78,7 +78,8 @@ plt.bar(wins.keys(), wins.values())
 plt.xticks(rotation=45)
 plt.gcf().subplots_adjust(bottom=0.25)
 plt.ylabel('Wins')
-plt.title('TOPP Results')
+plt.title(f'TOPP Results - {EXPERIMENT_NAME}')
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 plt.savefig(f'project2/figs/{EXPERIMENT_NAME}_topp_results_{timestamp}.png')
 plt.show()
+

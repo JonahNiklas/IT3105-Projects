@@ -18,7 +18,6 @@ class MCTS:
         node = self.root
         assert not node.game_state.is_terminal()
         while not node.is_leaf():
-            parent = node
             node = self.best_uct(node)
             if node.game_state.is_terminal():
                 return node
@@ -30,9 +29,9 @@ class MCTS:
         return MCTS_C * np.sqrt(np.log(parent.visits) / (1 + child.visits))
 
     def Q(self, parent: Node, child: Node):
-        return child.value / child.visits if child.visits > 0 else 0
+        return (child.value / child.visits) if child.visits > 0 else 0
 
-    def uct(self, parent, child):
+    def uct(self, parent: Node, child: Node):
         if parent.game_state.p1_turn:
             return self.Q(parent, child) + self.U(parent, child)
         return self.Q(parent, child) - self.U(parent, child)
@@ -51,7 +50,7 @@ class MCTS:
         else:
             best_child, best_child_uct = min(uct_values, key=lambda x: x[1])
 
-        # Best child is a explored node
+        # Best child is an explored node
         if best_child is not None:
             if VERBOSE:
                 print("Selecting previously explored node")
@@ -94,7 +93,7 @@ class MCTS:
             game_state = game_state.make_move(move)
         return game_state.get_winner()
 
-    def backpropagate(self, node, value):
+    def backpropagate(self, node: Node, value: int):
         while node is not None:
             node.visits += 1
             node.value += value
@@ -112,12 +111,10 @@ class MCTS:
         self.new_root(best_actual_move)
         return best_actual_move.game_state, distribution
 
-    def best_child(self, node):
-        return max(
-            [(child.visits, child) for child in node.children], key=lambda x: x[0]
-        )[1]
+    def best_child(self, node: Node) -> Node:
+        return max(node.children, key=lambda child: child.visits)
 
-    def new_root(self, node):
+    def new_root(self, node: Node):
         node.set_to_root()
         self.root = node
 
