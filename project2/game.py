@@ -4,6 +4,7 @@ import numpy as np
 
 plt.ion()
 
+
 class Game:
     def __init__(self):
         raise NotImplementedError(
@@ -29,6 +30,9 @@ class Game:
         pass
 
     def get_nn_input(self) -> "Game":
+        pass
+
+    def mask_illegal_indexes(self, logits):
         pass
 
     def __eq__(self, __value: object) -> bool:
@@ -59,10 +63,17 @@ class HexGame(Game):
         self.p1_turn = p1_turn
         self.last_move = last_move
 
+    # Supports both integer and tuple moves
     def make_move(self, move) -> "HexGame":
+        if isinstance(move, int) or isinstance(move, np.int64):
+            move = np.unravel_index(move, self.board_state.shape)
+
         assert len(move) == 2
         assert self.board_state[move[0], move[1]] == self.empty_encoding
         new_board_state = self.board_state.copy()
+        new_board_state[move[0], move[1]] = (
+            self.p1_encoding if self.p1_turn else self.p2_encoding
+        )
         new_board = HexGame(
             size=self.size,
             last_move=move,
@@ -72,18 +83,18 @@ class HexGame(Game):
             board_state=new_board_state,
             p1_turn=(not self.p1_turn),
         )
-        new_board.board_state[move[0], move[1]] = (
-            self.p1_encoding if self.p1_turn else self.p2_encoding
-        )
         return new_board
 
     def get_nn_input(self):
         if self.p1_turn:
             return self.board_state.copy()
-        
-        new_board_state_p1 = np.where(self.board_state == self.p1_encoding, self.p2_encoding, 0)
-        new_board_state_p2 = np.where(self.board_state == self.p2_encoding, self.p1_encoding, 0)
-        new_board_state_empty = np.where(self.board_state == self.empty_encoding, self.empty_encoding, 0)
+
+        new_board_state_p1 = np.where(
+            self.board_state == self.p1_encoding, self.p2_encoding, 0)
+        new_board_state_p2 = np.where(
+            self.board_state == self.p2_encoding, self.p1_encoding, 0)
+        new_board_state_empty = np.where(
+            self.board_state == self.empty_encoding, self.empty_encoding, 0)
         # assert self.empty_encoding + self.empty_encoding == self.empty_encoding
         return new_board_state_empty + new_board_state_p1 + new_board_state_p2
 
@@ -98,7 +109,8 @@ class HexGame(Game):
             """Generate the vertices of a regular hexagon given a center (x,y), and a size (distance from center to any vertex)."""
             angles = np.linspace(0, 2 * np.pi, 7)
             return np.c_[
-                (center[0] + size * np.cos(angles)), (center[1] + size * np.sin(angles))
+                (center[0] + size * np.cos(angles)
+                 ), (center[1] + size * np.sin(angles))
             ]
 
         # Create the board
@@ -112,7 +124,8 @@ class HexGame(Game):
         board_state = self.board_state.copy()
         # Surrond the board with colored hexagons
         # to indicate the two sides to connect
-        p1_side = np.array([self.p1_encoding] * (board_size + 2)).reshape(1, -1)
+        p1_side = np.array([self.p1_encoding] *
+                           (board_size + 2)).reshape(1, -1)
         p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
@@ -137,8 +150,6 @@ class HexGame(Game):
                         )
                     ),
                 )
-
-
         ax.invert_xaxis()
         plt.draw()
         plt.pause(0.1)
@@ -161,7 +172,7 @@ class HexGame(Game):
                     p2_encoding=self.p2_encoding,
                     empty_encoding=self.empty_encoding,
                     board_state=board_state,
-                   p1_turn= not self.p1_turn,
+                    p1_turn=(not self.p1_turn),
                 )
             )
         return successor_states
@@ -232,12 +243,16 @@ class HexGame(Game):
         )
         for child in children:
             move = child.game_state.last_move
-            distribution[move[0], move[1]] = np.exp(child.visits) / soft_max_sum
+            distribution[move[0], move[1]] = np.exp(
+                child.visits) / soft_max_sum
         for move in legal_moves:
             if distribution[move[0], move[1]] == 0:
                 distribution[move[0], move[1]] = 1 / soft_max_sum
 
         return distribution
+
+    def mask_illegal_indexes(self, logits):
+        return np.where(self.board_state == self.empty_encoding, logits, 0)
 
     def __eq__(self, other):
         return np.array_equal(self.board_state, other.board_state)
@@ -247,10 +262,9 @@ if __name__ == "__main__":
     # Test is_terminal
     game = [[1, 1, 0], [-1, -1, -1], [0, 0, 0]]
     game = np.array(game)
-    hex_game = HexGame(3, board_state=game)
+    hex_game = HexGame(3, board_state=game, last_move=None)
     assert hex_game.is_terminal() == True
     assert hex_game.get_winner() == -1
-
     game = [
         [0, 0, 0, 0, 0, 0, -1],
         [0, 0, 0, 0, 0, -1, 0],
@@ -261,15 +275,41 @@ if __name__ == "__main__":
         [-1, 0, 0, 0, 0, 0, 0],
     ]
     game = np.array(game)
-    hex_game = HexGame(7, board_state=game)
+    hex_game = HexGame(7, board_state=game, last_move=None)
     print(hex_game.get_legal_moves())
     assert hex_game.is_terminal() == True
     assert hex_game.get_winner() == -1
-
     game = np.rot90(game, k=1)
     print(game)
-    hex_game = HexGame(7, board_state=game)
+    hex_game = HexGame(7, board_state=game, last_move=None)
     assert hex_game.is_terminal() == False
     assert hex_game.get_winner() == 0
 
+    # Test get_nn_input
+    game = np.array([[1, 1, 0], [-1, -1, -1], [0, 0, 0]])
+    hex_game = HexGame(3, board_state=game, last_move=None)
+    assert np.array_equal(hex_game.get_nn_input(), game)
+    hex_game = hex_game.make_move((2, 0))
+    assert hex_game.board_state[2, 0] == 1
+    game[2, 0] = 1
+    assert np.array_equal(hex_game.get_nn_input(), game *
+                          (-1)), f"{hex_game.get_nn_input()} != {game * (-1)}"
+
+    # Test make_distribution
+    from project2.node import Node
+    game = np.array([[0, 0, 1], [0, 0, 0], [0, 0, -1]])
+    hex_game = HexGame(3, board_state=game, last_move=None)
+    root = Node(parent=None, game_state=hex_game)
+    root.visits = 3
+    hex_game1 = hex_game.make_move((0, 0))
+    hex_game2 = hex_game.make_move((0, 1))
+    n1 = Node(parent=root, game_state=hex_game1)
+    n1.visits = 1
+    n2 = Node(parent=root, game_state=hex_game2)
+    n2.visits = 1
+    root.add_child(n1)
+    root.add_child(n2)
+    distribution = hex_game.make_distribution(root.children)
+    assert np.array_equal(distribution, np.array([[0.5, 0.5, 0], [0, 0, 0], [
+                          0, 0, 0]])), f"\n{distribution}\n != [[0.5, 0.5, 0], [0, 0, 0], [0, 0, 0]]"
     print("All tests passed!")

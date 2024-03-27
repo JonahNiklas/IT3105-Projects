@@ -7,6 +7,7 @@ import torch
 
 np.seterr(all="raise")
 
+
 class MCTS:
     def __init__(self, ANET: NeuralNetwork, game_state: Game) -> None:
         self.ANET = ANET
@@ -40,7 +41,8 @@ class MCTS:
         # Need to know if all children have been expanded
         num_legal_moves = len(parent.game_state.get_legal_moves())
         unseen_value = self.uct(parent, Node(None, None))
-        uct_values = [(child, self.uct(parent, child)) for child in parent.children]
+        uct_values = [(child, self.uct(parent, child))
+                      for child in parent.children]
         # If all children have been expanded, dont add unseen_value
         if len(uct_values) < num_legal_moves:
             uct_values = uct_values + [(None, unseen_value)]
@@ -48,13 +50,15 @@ class MCTS:
             best_child, best_child_uct = max(uct_values, key=lambda x: x[1])
         else:
             best_child, best_child_uct = min(uct_values, key=lambda x: x[1])
-        
+
         # Best child is a explored node
         if best_child is not None:
-            if VERBOSE: print("Selecting previously explored node")
+            if VERBOSE:
+                print("Selecting previously explored node")
             return best_child
 
-        if VERBOSE: print("Selecting unseen node")
+        if VERBOSE:
+            print("Selecting unseen node")
         # Explore unseen node
         successor_states = parent.game_state.get_successor_states()
         # Select random non-seen successor not in node.children
@@ -67,16 +71,19 @@ class MCTS:
         return Node(parent, np.random.choice(possible_next_states))
 
     def rollout(self, node: Node):
-        if VERBOSE: print(f"Rollout from {node}")
+        if VERBOSE:
+            print(f"Rollout from {node}")
         assert node.parent.visits > 0
         game_state = node.game_state
         while not game_state.is_terminal():
             # if opponents turn, play the best move for the opponent
             input = game_state.get_nn_input()
-            input = torch.tensor(input, dtype=torch.float32).unsqueeze(0).to(device)
+            input = torch.tensor(
+                input, dtype=torch.float32).unsqueeze(0).to(device)
             logits = self.ANET(input)
             logits = logits.detach().cpu().numpy().squeeze()
-            logits = np.where(game_state.board_state == 0, logits, 0)
+            # Mask out illegal moves
+            logits = game_state.mask_illegal_indexes(logits)
             # Renormalize
             logits = logits / logits.sum()
             if np.random.rand() < MCTS_ROLLOUT_EPSILON:
@@ -100,7 +107,8 @@ class MCTS:
             self.backpropagate(node, result)
 
         best_actual_move = self.best_child(self.root)
-        distribution = self.root.game_state.make_distribution(self.root.children)
+        distribution = self.root.game_state.make_distribution(
+            self.root.children)
         self.new_root(best_actual_move)
         return best_actual_move.game_state, distribution
 
