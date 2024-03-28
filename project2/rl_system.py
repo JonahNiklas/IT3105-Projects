@@ -20,7 +20,7 @@ if VISUALIZE:
 
 
 def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
-    torch.set_num_threads(1)
+    # torch.set_num_threads(1)
     while game_num.value < NUMBER_OF_EPISODES:
         game = HexGame(size=BOARD_SIZE, last_move=None)
         mcts = MCTS(ANET=ANET, game_state=game)
@@ -54,7 +54,8 @@ if __name__ == "__main__":
     RBUF_lock = mp.Lock()
     game_num = mp.Value("i", 0)
     game_num_lock = mp.Lock()
-    num_processes = os.cpu_count()
+    num_processes = os.cpu_count() + 2
+    print(f"Using {num_processes} processes for training ANET")
     processes = []
     for i in range(num_processes):
         p = mp.Process(
