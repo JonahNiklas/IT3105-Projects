@@ -44,6 +44,7 @@ def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
             Y = np.array([distribution for _, distribution in RBUF])
 
         ANET.train_one_batch(X, Y)
+    print(f"Process {process_id} done!")
 
 
 if __name__ == "__main__":
@@ -68,7 +69,9 @@ if __name__ == "__main__":
         while game_num.value < NUMBER_OF_EPISODES:
             pbar.update(game_num.value - last_completed_game)
             last_completed_game = game_num.value
-            time.sleep(10)      
+            if not all(process.is_alive() for process in processes):
+                print(f"Process is dead")
+            time.sleep(10)
 
     for p in processes:
         p.join()

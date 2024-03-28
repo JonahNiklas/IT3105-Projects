@@ -2,7 +2,7 @@ EXPERIMENT_NAME = "small-board-long-training"
 VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 5
-NUMBER_OF_EPISODES = 75_000  # actual games
+NUMBER_OF_EPISODES = 30000  # actual games
 NUMBER_OF_SIMULATIONS = 100  # MCTS simulations per move
 
 # ANET
