@@ -14,6 +14,7 @@ from project2.globals import (
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device {device}")
 
+
 class NeuralNetwork(torch.nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
@@ -36,13 +37,21 @@ class NeuralNetwork(torch.nn.Module):
                     torch.nn.Linear(ANET_NUM_HIDDEN_NODES, ANET_NUM_HIDDEN_NODES),
                 )
             if ANET_ACTIVATION_FUNCTION == "linear":
-                self.linear_stack.add_module("activation_function_{}".format(i), torch.nn.Identity())
+                self.linear_stack.add_module(
+                    "activation_function_{}".format(i), torch.nn.Identity()
+                )
             elif ANET_ACTIVATION_FUNCTION == "sigmoid":
-                self.linear_stack.add_module("activation_function_{}".format(i), torch.nn.Sigmoid())
+                self.linear_stack.add_module(
+                    "activation_function_{}".format(i), torch.nn.Sigmoid()
+                )
             elif ANET_ACTIVATION_FUNCTION == "tanh":
-                self.linear_stack.add_module("activation_function_{}".format(i), torch.nn.Tanh())
+                self.linear_stack.add_module(
+                    "activation_function_{}".format(i), torch.nn.Tanh()
+                )
             elif ANET_ACTIVATION_FUNCTION == "relu":
-                self.linear_stack.add_module("activation_function_{}".format(i), torch.nn.ReLU())
+                self.linear_stack.add_module(
+                    "activation_function_{}".format(i), torch.nn.ReLU()
+                )
             else:
                 raise ValueError("Invalid activation function")
         self.softmax = torch.nn.Softmax(dim=1)
@@ -57,11 +66,11 @@ class NeuralNetwork(torch.nn.Module):
         assert logits.shape == (batch_size, BOARD_SIZE * BOARD_SIZE)
         logits = logits.view(batch_size, BOARD_SIZE, BOARD_SIZE)
         return logits
-    
-    def train_one_batch(self, X, Y):
-        assert len(X) == len(Y)
-        X, Y = torch.tensor(X, dtype=torch.float32).to(device), torch.tensor(Y, dtype=torch.float32).to(device)
-        dataloader = torch.utils.data.DataLoader(list(zip(X, Y)), batch_size=ANET_BATCH_SIZE, shuffle=True)
+
+    def train_one_batch(self, RBUF):
+        dataloader = torch.utils.data.DataLoader(
+            RBUF, batch_size=ANET_BATCH_SIZE, shuffle=True
+        )
         if ANET_OPTIMIZER == "adagrad":
             optimizer = torch.optim.Adagrad(self.parameters(), lr=ANET_LEARNING_RATE)
         elif ANET_OPTIMIZER == "sgd":
@@ -71,15 +80,16 @@ class NeuralNetwork(torch.nn.Module):
         elif ANET_OPTIMIZER == "rmsprop":
             optimizer = torch.optim.RMSprop(self.parameters(), lr=ANET_LEARNING_RATE)
         x, y = next(iter(dataloader))
+        x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
         output = self(x)
         loss = torch.nn.functional.mse_loss(output, y)
         loss.backward()
         optimizer.step()
-    
+
     def save(self, i, path="saved_networks"):
         import os
+
         if not os.path.exists(path):
             os.makedirs(path)
         torch.save(self.state_dict(), f"{path}/{EXPERIMENT_NAME}_anet_{i}.pt")
-
