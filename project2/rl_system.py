@@ -34,6 +34,7 @@ def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
         with game_num_lock:
             game_num.value += 1
             if game_num.value % (NUMBER_OF_EPISODES // ANET_M) == 0:
+                print(f"Saving net at game number {game_num.value}")
                 ANET.save(game_num.value)
         if VISUALIZE:
             print(f"Process {process_id}\tGame {game_num.value}: Player {game.get_winner()} won the game")
