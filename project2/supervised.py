@@ -30,7 +30,7 @@ assert scores.shape == (training_examples, 13, 13)
 
 assert np.isclose(scores[0].sum(), 1.0), f"Sum of scores is not one: {scores[0].sum()}"
 
-net = NeuralNetwork()
+net = NeuralNetwork(board_size=13)
 print(net)
 
 def train(net: torch.nn.Module):

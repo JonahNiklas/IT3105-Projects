@@ -16,20 +16,21 @@ print(f"Using device {device}")
 
 
 class NeuralNetwork(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, board_size=BOARD_SIZE):
         super(NeuralNetwork, self).__init__()
+        self.board_size = board_size
         self.flatten = torch.nn.Flatten()
         self.linear_stack = torch.nn.Sequential()
         for i in range(ANET_NUM_HIDDEN_LAYERS):
             if i == 0:
                 self.linear_stack.add_module(
                     "hidden_layer_{}".format(i),
-                    torch.nn.Linear(BOARD_SIZE * BOARD_SIZE, ANET_NUM_HIDDEN_NODES),
+                    torch.nn.Linear(board_size * board_size, ANET_NUM_HIDDEN_NODES),
                 )
             elif i == ANET_NUM_HIDDEN_LAYERS - 1:
                 self.linear_stack.add_module(
                     "hidden_layer_{}".format(i),
-                    torch.nn.Linear(ANET_NUM_HIDDEN_NODES, BOARD_SIZE * BOARD_SIZE),
+                    torch.nn.Linear(ANET_NUM_HIDDEN_NODES, board_size * board_size),
                 )
             else:
                 self.linear_stack.add_module(
@@ -59,12 +60,12 @@ class NeuralNetwork(torch.nn.Module):
 
     def forward(self, x):
         batch_size = x.shape[0]
-        assert x.shape == (batch_size, BOARD_SIZE, BOARD_SIZE)
+        assert x.shape == (batch_size, self.board_size, self.board_size)
         x = self.flatten(x)
         logits = self.linear_stack(x)
         logits = self.softmax(logits)
-        assert logits.shape == (batch_size, BOARD_SIZE * BOARD_SIZE)
-        logits = logits.view(batch_size, BOARD_SIZE, BOARD_SIZE)
+        assert logits.shape == (batch_size, self.board_size * self.board_size)
+        logits = logits.view(batch_size, self.board_size, self.board_size)
         return logits
 
     def train_one_batch(self, RBUF):
