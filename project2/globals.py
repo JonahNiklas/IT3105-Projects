@@ -13,6 +13,8 @@ ANET_ACTIVATION_FUNCTION = 'relu'  # linear, sigmoid, tanh, relu
 ANET_OPTIMIZER = 'adam'  # adagrad, sgd, adam, rmsprop
 ANET_M = 10  # number of ANETs to be cached
 ANET_BATCH_SIZE = 128
+ANET_d = 8 # number of conv layers
+ANET_W = 128 # number of conv filters per layer
 
 # TOPP
 TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS = 100
