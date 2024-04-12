@@ -61,6 +61,7 @@ if __name__ == "__main__":
     if START_RL_FROM_STATE is not None:
         print(f"Starting RL from state {START_RL_FROM_STATE}")
         ANET.load_state_dict(torch.load(f"saved_networks/{START_RL_FROM_STATE}", map_location=device))
+    ANET.to(device)
     if not torch.cuda.is_available():
         ANET.share_memory() 
     RBUF = mp.Manager().list()
