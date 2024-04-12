@@ -16,6 +16,7 @@ print(f"Number of training examples: {training_examples}")
 p1 = positions[:, 0, :, :]
 p2 = positions[:, 1, :, :]
 p1, p2 = p1.astype(float), p2.astype(float)
+p1_example, p2_example = p1[23657], p2[23657]
 
 empty = np.ones_like(p1) - np.where(p1 + p2 >= 1, 1, 0)
 positions = np.stack([p1, p2, empty], axis=1)
@@ -31,11 +32,11 @@ assert scores.shape == (training_examples, 13, 13)
 assert np.isclose(
     scores[0].sum(), 1.0), f"Sum of scores is not one: {scores[0].sum()}"
 
-# Rotate the boards to make more data
-rotated_positions = np.rot90(positions, k=1, axes=(2, 3))
-rotated_scores = np.rot90(scores, k=1, axes=(1, 2))
-positions = np.concatenate([positions, rotated_positions], axis=0)
-scores = np.concatenate([scores, rotated_scores], axis=0)
+# Assert that p1 always plays from top <-> bottom
+assert np.all(p1[:, 0, :] == 1), "p1 does not always play from top to bottom"
+assert np.all(p1[:, -1, :] == 1), "p1 does not always play from top to bottom"
+assert np.all(p2[:, :, 0] == 1), "p2 does not always play from left to right"
+assert np.all(p2[:, :, -1] == 1), "p2 does not always play from left to right"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 net = ConvNetwork(board_size=13).to(device)
@@ -72,7 +73,7 @@ def train(net: torch.nn.Module):
         print(f"Epoch {epoch} accuracy: {np.mean(epoch_accuracies)}")
 
 
-net.load_state_dict(torch.load(
-    "saved_networks/supervised_1.pt", map_location=device))
+# net.load_state_dict(torch.load(
+#     "saved_networks/supervised_1.pt", map_location=device))
 train(net)
 net.save(0, dir="saved_networks", name="supervised")

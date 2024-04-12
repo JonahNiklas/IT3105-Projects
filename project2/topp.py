@@ -27,7 +27,7 @@ if TOPP_VISUALIZE:
 ANETS = {}
 ANETS["untrained"] = FeedForwardNetwork()
 ANETS["supervised"] = ConvNetwork()
-ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised_1.pt", map_location=device))
+ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised.pt", map_location=device))
 # folder_path = "saved_networks"
 # for filename in sorted(
 #     os.listdir(folder_path), key=lambda x: int(x.split("_")[-1].split(".")[0])
@@ -77,7 +77,7 @@ def play_a_game(ANET1: NeuralNetwork, ANET2: NeuralNetwork, visualize=False):
             print(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}", end="\r")
             plt.title(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}")
             game.visualize_board(ax)
-            time.sleep(1)
+            time.sleep(0.5)
 
     return game.get_winner(), game.p1_encoding, game.p2_encoding
 

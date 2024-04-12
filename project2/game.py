@@ -158,11 +158,11 @@ class HexGame(Game):
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
 
-        board_state = np.rot90(board_state, k=2)
+        board_state = np.rot90(board_state, k=-1)
         # Draw the hexagons
         for x in range(len(board_state)):
             for y in range(len(board_state)):
-                center = (x * x_offset, (y + x / 2) * y_offset)
+                center = (x * x_offset, (y - x / 2) * y_offset)
                 hex_path = hexagon(center, 1)
                 ax.fill(
                     hex_path[:-1, 0],
@@ -178,7 +178,6 @@ class HexGame(Game):
                         )
                     ),
                 )
-        ax.invert_xaxis()
         plt.draw()
         plt.pause(0.1)
 
@@ -212,6 +211,8 @@ class HexGame(Game):
         )
 
     def check_winner(self, player_encoding) -> bool:
+        # p1: top <-> bottom
+        # p2: left <-> right
         if player_encoding == self.p1_encoding:
             for i in range(self.size):
                 if self.board_state[0, i] == player_encoding:
@@ -366,5 +367,15 @@ if __name__ == "__main__":
     assert hex_game.p1_turn == False
     hex_game = hex_game.make_move(4)
     assert hex_game.board_state[1, 1] == -1
+
+    # Test visualize_board
+    board = np.array([[0, 0, 1], 
+                      [-1, 0, 0], 
+                      [-1, 0, 0]])
+    hex_game = HexGame(3, board_state=board, last_move=None)
+    fig, ax = plt.subplots(1)
+    hex_game.visualize_board(ax)
+    plt.show()
+    input("Worked?")
 
     print("All tests passed!")
