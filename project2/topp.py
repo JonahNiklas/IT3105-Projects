@@ -27,18 +27,18 @@ if TOPP_VISUALIZE:
 ANETS = {}
 ANETS["untrained"] = FeedForwardNetwork()
 ANETS["supervised"] = ConvNetwork()
-ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised.pt", map_location=device))
-# folder_path = "saved_networks"
-# for filename in sorted(
-#     os.listdir(folder_path), key=lambda x: int(x.split("_")[-1].split(".")[0])
-# ):
-#     # Check if the file is a network file
-#     if filename.startswith(EXPERIMENT_NAME) and filename.endswith(".pt"):
-#         # Load the network
-#         network_path = os.path.join(folder_path, filename)
-#         network = FeedForwardNetwork()
-#         network.load_state_dict(torch.load(network_path, map_location=device))
-#         ANETS[filename.replace(EXPERIMENT_NAME + "_", "")] = network
+ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised_10.pt", map_location=device))
+folder_path = "saved_networks"
+for filename in sorted(
+    os.listdir(folder_path), key=lambda x: int(x.split("_")[-1].split(".")[0])
+):
+    # Check if the file is a network file
+    if filename.startswith(EXPERIMENT_NAME) and filename.endswith(".pt"):
+        # Load the network
+        network_path = os.path.join(folder_path, filename)
+        network = FeedForwardNetwork()
+        network.load_state_dict(torch.load(network_path, map_location=device))
+        ANETS[filename.replace(EXPERIMENT_NAME + "_", "")] = network
 
 
 num_nets = len(ANETS)
@@ -61,10 +61,11 @@ def play_a_game(ANET1: NeuralNetwork, ANET2: NeuralNetwork, visualize=False):
 
         if game.p1_turn:
             nn_input = torch.tensor(game.get_nn_input(ANET1.num_input_channels)).float().unsqueeze(0)
-            logits = ANET1(nn_input).detach().cpu().numpy()
+            logits = ANET1(nn_input).detach().squeeze(0).cpu().numpy()
         else:
             nn_input = torch.tensor(game.get_nn_input(ANET2.num_input_channels)).float().unsqueeze(0)
-            logits = ANET2(nn_input).detach().cpu().numpy()
+            logits = ANET2(nn_input).detach().squeeze(0).cpu().numpy()
+        assert logits.shape == (game.size, game.size)
         logits = game.mask_illegal_indexes(logits)
         if logits.sum() == 0:
             logits = game.mask_illegal_indexes(np.ones_like(logits))
@@ -77,7 +78,7 @@ def play_a_game(ANET1: NeuralNetwork, ANET2: NeuralNetwork, visualize=False):
             print(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}", end="\r")
             plt.title(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}")
             game.visualize_board(ax)
-            time.sleep(0.5)
+            time.sleep(0.25)
 
     return game.get_winner(), game.p1_encoding, game.p2_encoding
 
@@ -107,6 +108,8 @@ with tqdm(total=rounds, desc="TOPP Progress") as pbar:
                 wins[filename2] += wins_p2
                 pbar.update(1)
 
+# Reset plot
+plt.close()
 # Plot the results
 plt.bar(wins.keys(), wins.values())
 plt.xticks(rotation=45)

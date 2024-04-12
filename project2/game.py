@@ -69,7 +69,14 @@ class HexGame(Game):
             move = np.unravel_index(move, self.board_state.shape)
 
         assert len(move) == 2
+        # p2 uses a different coordinate system where the board is transposed
+        # so the anet always tries to connect top and bottom
+        # therefore we need to transpose back the move to the original coordinate system
+        if not self.p1_turn:
+            move = (move[1], move[0])
+
         assert self.board_state[move[0], move[1]] == self.empty_encoding
+
         new_board_state = self.board_state.copy()
         new_board_state[move[0], move[1]] = (
             self.p1_encoding if self.p1_turn else self.p2_encoding
@@ -106,9 +113,7 @@ class HexGame(Game):
         board_size = self.size
         # Surrond the board with colored hexagons
         # to indicate the two sides to connect
-        p1_side = np.array(
-            [self.p1_encoding] * (board_size+4)
-        ).reshape(1, -1)
+        p1_side = np.array([self.p1_encoding] * (board_size + 4)).reshape(1, -1)
         p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
@@ -116,8 +121,7 @@ class HexGame(Game):
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
         new_board_state_p1 = np.where(board_state == self.p1_encoding, 1, 0)
         new_board_state_p2 = np.where(board_state == self.p2_encoding, 1, 0)
-        new_board_state_empty = np.where(
-            board_state == self.empty_encoding, 1, 0)
+        new_board_state_empty = np.where(board_state == self.empty_encoding, 1, 0)
 
         new_board_state_p2[:2, :2] = 1
         new_board_state_p2[:2, -2:] = 1
@@ -129,9 +133,11 @@ class HexGame(Game):
                 [new_board_state_p1, new_board_state_p2, new_board_state_empty]
             )
 
-        return np.stack(
-            [new_board_state_p2, new_board_state_p1, new_board_state_empty]
-        )
+        # We want the player always to try to connect top and bottom, so we need to transpose the board
+        new_board_state_p2 = np.transpose(new_board_state_p2)
+        new_board_state_p1 = np.transpose(new_board_state_p1)
+        new_board_state_empty = np.transpose(new_board_state_empty)
+        return np.stack([new_board_state_p2, new_board_state_p1, new_board_state_empty])
 
     def visualize_board(
         self,
@@ -149,8 +155,7 @@ class HexGame(Game):
             """Generate the vertices of a regular hexagon given a center (x,y), and a size (distance from center to any vertex)."""
             angles = np.linspace(0, 2 * np.pi, 7)
             return np.c_[
-                (center[0] + size * np.cos(angles)
-                 ), (center[1] + size * np.sin(angles))
+                (center[0] + size * np.cos(angles)), (center[1] + size * np.sin(angles))
             ]
 
         # Create the board
@@ -164,8 +169,7 @@ class HexGame(Game):
         board_state = self.board_state.copy()
         # Surrond the board with colored hexagons
         # to indicate the two sides to connect
-        p1_side = np.array([self.p1_encoding] *
-                           (board_size + 2)).reshape(1, -1)
+        p1_side = np.array([self.p1_encoding] * (board_size + 2)).reshape(1, -1)
         p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
@@ -194,7 +198,8 @@ class HexGame(Game):
         plt.pause(0.1)
 
     def get_legal_moves(self) -> List[tuple[int, int]]:
-        """Implement the following methods for the HexGame class:"""
+        if not self.p1_turn:
+            return np.argwhere(np.transpose(self.board_state) == self.empty_encoding)
         return np.argwhere(self.board_state == self.empty_encoding)
 
     def get_successor_states(self) -> List["HexGame"]:
@@ -285,8 +290,7 @@ class HexGame(Game):
         )
         for child in children:
             move = child.game_state.last_move
-            distribution[move[0], move[1]] = np.exp(
-                child.visits) / soft_max_sum
+            distribution[move[0], move[1]] = np.exp(child.visits) / soft_max_sum
         for move in legal_moves:
             if distribution[move[0], move[1]] == 0:
                 distribution[move[0], move[1]] = 1 / soft_max_sum
@@ -294,6 +298,11 @@ class HexGame(Game):
         return distribution
 
     def mask_illegal_indexes(self, logits):
+        if not self.p1_turn:
+            return np.where(
+                np.transpose(self.board_state) == self.empty_encoding, logits, 0
+            )
+
         return np.where(self.board_state == self.empty_encoding, logits, 0)
 
     def __eq__(self, other):
@@ -382,9 +391,7 @@ if __name__ == "__main__":
     assert hex_game.board_state[1, 1] == -1
 
     # Test visualize_board
-    board = np.array([[0, 0, 1], 
-                      [-1, 0, 0], 
-                      [-1, 0, 0]])
+    board = np.array([[0, 0, 1], [-1, 0, 0], [-1, 0, 0]])
     hex_game = HexGame(3, board_state=board, last_move=None)
     fig, ax = plt.subplots(1)
     hex_game.visualize_board(ax)

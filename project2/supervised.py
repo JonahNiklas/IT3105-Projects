@@ -49,7 +49,7 @@ def accuracy(pred, target):
     return (pred.argmax(dim=1) == target.argmax(dim=1)).float().mean().item()
 
 
-def train(net: torch.nn.Module):
+def train(net: torch.nn.Module, num_epochs=10):
     optimizer = torch.optim.Adam(net.parameters())
     criterion = torch.nn.CrossEntropyLoss()
     X = torch.tensor(positions, dtype=torch.float32).to(device)
@@ -58,7 +58,7 @@ def train(net: torch.nn.Module):
     dataloader = torch.utils.data.DataLoader(
         list(zip(X, Y)), batch_size=128, shuffle=True
     )
-    for epoch in range(15):
+    for epoch in range(1, num_epochs + 1):
         epoch_losses = []
         epoch_accuracies = []
         for x, y in tqdm(dataloader, desc=f"Epoch {epoch}", leave=False):
@@ -69,8 +69,8 @@ def train(net: torch.nn.Module):
             optimizer.step()
             epoch_losses.append(loss.item())
             epoch_accuracies.append(accuracy(y_pred, y))
-        print(f"Epoch {epoch} loss: {np.mean(epoch_losses)}")
-        print(f"Epoch {epoch} accuracy: {np.mean(epoch_accuracies)}")
+        print(f"Epoch {epoch}/{num_epochs} loss: {np.mean(epoch_losses)}")
+        print(f"Epoch {epoch}/{num_epochs} accuracy: {np.mean(epoch_accuracies)}")
 
 
 # net.load_state_dict(torch.load(

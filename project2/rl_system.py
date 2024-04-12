@@ -47,8 +47,10 @@ def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_n
             )
         with RBUF_lock:
             RBUF.extend(local_RBUF)
+            RBUF = RBUF[-MAX_RBUF_SIZE:]
 
         ANET.train_one_batch(RBUF)
+
     print(f"Process {process_id} done!")
 
 
