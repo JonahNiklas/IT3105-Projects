@@ -7,6 +7,7 @@ print(f"Using device {device}")
 class NeuralNetwork(torch.nn.Module):   
     def __init__(self):
         super(NeuralNetwork, self).__init__()
+        self.num_input_channels = 1
 
     def forward(self, x):
         raise NotImplementedError
@@ -31,12 +32,15 @@ class NeuralNetwork(torch.nn.Module):
         loss.backward()
         optimizer.step()
 
-    def save(self, i, path="saved_networks"):
+    def save(self, i=0, dir="saved_networks", name=f"{EXPERIMENT_NAME}_anet"):
         import os
 
-        if not os.path.exists(path):
-            os.makedirs(path)
-        torch.save(self.state_dict(), f"{path}/{EXPERIMENT_NAME}_anet_{i}.pt")
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        if i > 0:
+            name += f"_{i}"
+        torch.save(self.state_dict(), f"{dir}/{name}.pt")
 
 class FeedForwardNetwork(NeuralNetwork):
     def __init__(self, board_size=BOARD_SIZE):
@@ -84,7 +88,7 @@ class FeedForwardNetwork(NeuralNetwork):
     def forward(self, x):
         batch_size = x.shape[0]
         assert x.shape == (batch_size, self.board_size, self.board_size)
-        x = self.flatten(x)
+        x = x.view(batch_size, self.board_size * self.board_size)
         logits = self.linear_stack(x)
         logits = self.softmax(logits)
         assert logits.shape == (batch_size, self.board_size * self.board_size)
@@ -94,6 +98,8 @@ class FeedForwardNetwork(NeuralNetwork):
 class ConvNetwork(NeuralNetwork):
     def __init__(self, board_size=BOARD_SIZE):
         super(ConvNetwork, self).__init__()
+        self.num_input_channels = 3
+        assert board_size > 5, "ConvNetwork only supports board sizes larger than 5"
         self.board_size = board_size
         self.conv_stack = torch.nn.Sequential()
         self.conv_stack.add_module(
@@ -105,6 +111,10 @@ class ConvNetwork(NeuralNetwork):
                 f"conv_{i+2}",
                 torch.nn.Conv2d(ANET_W, ANET_W, kernel_size=3, padding=1),
             )
+            self.conv_stack.add_module(
+                f"activation_{i+2}",
+                torch.nn.ReLU(),
+            )
         #this layer should account for positional bias
         self.conv_stack.add_module(
             "conv_final",
@@ -114,7 +124,7 @@ class ConvNetwork(NeuralNetwork):
 
     def forward(self, x):
         batch_size = x.shape[0]
-        assert x.shape == (batch_size, 3, self.board_size + 4, self.board_size + 4) # board padding
+        assert x.shape == (batch_size, self.num_input_channels, self.board_size + 4, self.board_size + 4) # board padding
         logits = self.conv_stack(x)
         assert logits.shape == (batch_size, 1, self.board_size, self.board_size)
         logits = logits.view(batch_size, self.board_size * self.board_size)

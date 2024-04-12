@@ -1,9 +1,10 @@
-EXPERIMENT_NAME = "small-board-long-training"
+EXPERIMENT_NAME = "feedforward1"
 VERBOSE = False
 VISUALIZE = False
-BOARD_SIZE = 5
-NUMBER_OF_EPISODES = 10_000  # actual games
+BOARD_SIZE = 13
+NUMBER_OF_EPISODES = 5_000  # actual games
 NUMBER_OF_SIMULATIONS = 100  # MCTS simulations per move
+START_RL_FROM_STATE = "supervised_2.pt"
 
 # ANET
 ANET_LEARNING_RATE = 0.01
@@ -19,7 +20,7 @@ ANET_W = 128 # number of conv filters per layer
 # TOPP
 TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS = 100
 TOPP_EPSILON = 0
-TOPP_VISUALIZE = True
+TOPP_VISUALIZE = False
 
 # MCTS
 MCTS_ROLLOUT_EPSILON = 0.20

@@ -8,9 +8,9 @@ import torch.multiprocessing as mp
 from tqdm import tqdm
 
 from project2.game import Game, HexGame
-from project2.globals import ANET_M, BOARD_SIZE, NUMBER_OF_EPISODES, VISUALIZE
+from project2.globals import *
 from project2.mcts import MCTS
-from project2.neural_network import NeuralNetwork
+from project2.neural_network import ConvNetwork, NeuralNetwork
 
 if VISUALIZE:
     fig, ax = plt.subplots(1)
@@ -19,7 +19,7 @@ if VISUALIZE:
     fig.canvas.draw()
 
 
-def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
+def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_num_lock):
     torch.set_num_threads(1)
     while game_num.value < NUMBER_OF_EPISODES:
         game = HexGame(size=BOARD_SIZE, last_move=None)
@@ -29,7 +29,7 @@ def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
             new_game, distribution = mcts.search()
             local_RBUF.append(
                 (
-                    torch.tensor(game.get_nn_input(), dtype=torch.float32),
+                    torch.tensor(game.get_nn_input(ANET.num_input_channels), dtype=torch.float32),
                     torch.tensor(distribution, dtype=torch.float32),
                 )
             )
@@ -54,7 +54,11 @@ def play_game(process_id, ANET, RBUF, RBUF_lock, game_num, game_num_lock):
 
 if __name__ == "__main__":
     mp.set_start_method("spawn")
-    ANET = NeuralNetwork()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ANET = ConvNetwork()
+    if START_RL_FROM_STATE is not None:
+        print(f"Starting RL from state {START_RL_FROM_STATE}")
+        ANET.load_state_dict(torch.load(f"saved_networks/{START_RL_FROM_STATE}", map_location=device))
     ANET.share_memory()
     RBUF = mp.Manager().list()
     RBUF_lock = mp.Lock()

@@ -76,7 +76,7 @@ class MCTS:
         game_state = node.game_state
         while not game_state.is_terminal():
             # if opponents turn, play the best move for the opponent
-            input = game_state.get_nn_input()
+            input = game_state.get_nn_input(self.ANET.num_input_channels)
             input = torch.tensor(
                 input, dtype=torch.float32).unsqueeze(0).to(device)
             logits = self.ANET(input)

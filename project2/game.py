@@ -85,21 +85,43 @@ class HexGame(Game):
         )
         return new_board
 
-    def get_nn_input(self):
-        if self.p1_turn:
-            return self.board_state.copy()
+    def get_nn_input(self, num_input_channels=1):
+        if num_input_channels == 1:
+            if self.p1_turn:
+                return self.board_state.copy()
 
-        new_board_state_p1 = np.where(
-            self.board_state == self.p1_encoding, self.p2_encoding, 0
-        )
-        new_board_state_p2 = np.where(
-            self.board_state == self.p2_encoding, self.p1_encoding, 0
-        )
-        new_board_state_empty = np.where(
-            self.board_state == self.empty_encoding, self.empty_encoding, 0
-        )
-        # assert self.empty_encoding + self.empty_encoding == self.empty_encoding
-        return new_board_state_empty + new_board_state_p1 + new_board_state_p2
+            new_board_state_p1 = np.where(
+                self.board_state == self.p1_encoding, self.p2_encoding, 0
+            )
+            new_board_state_p2 = np.where(
+                self.board_state == self.p2_encoding, self.p1_encoding, 0
+            )
+            new_board_state_empty = np.where(
+                self.board_state == self.empty_encoding, self.empty_encoding, 0
+            )
+            # assert self.empty_encoding + self.empty_encoding == self.empty_encoding
+            return new_board_state_empty + new_board_state_p1 + new_board_state_p2
+
+        board_state = self.board_state.copy()
+        board_size = self.size
+        # Surrond the board with colored hexagons
+        # to indicate the two sides to connect
+        p1_side = np.array(
+            [self.empty_encoding] * 2 + [self.p1_encoding] * board_size + [self.empty_encoding] * 2
+        ).reshape(1, -1)
+        p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
+        board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
+        board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
+        board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
+        board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
+        new_board_state_p1 = np.where(board_state == self.p1_encoding, 1, 0)
+        new_board_state_p2 = np.where(board_state == self.p2_encoding, 1, 0)
+        new_board_state_empty = np.where(board_state == self.empty_encoding, 1, 0)
+
+        if self.p1_turn:
+            return new_board_state_p1, new_board_state_p2, new_board_state_empty
+
+        return new_board_state_p2, new_board_state_p1, new_board_state_empty
 
     def visualize_board(
         self,
