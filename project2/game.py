@@ -107,7 +107,7 @@ class HexGame(Game):
         # Surrond the board with colored hexagons
         # to indicate the two sides to connect
         p1_side = np.array(
-            [self.empty_encoding] * 2 + [self.p1_encoding] * board_size + [self.empty_encoding] * 2
+            [self.p1_encoding] * (board_size+4)
         ).reshape(1, -1)
         p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
@@ -116,12 +116,22 @@ class HexGame(Game):
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
         new_board_state_p1 = np.where(board_state == self.p1_encoding, 1, 0)
         new_board_state_p2 = np.where(board_state == self.p2_encoding, 1, 0)
-        new_board_state_empty = np.where(board_state == self.empty_encoding, 1, 0)
+        new_board_state_empty = np.where(
+            board_state == self.empty_encoding, 1, 0)
+
+        new_board_state_p2[:2, :2] = 1
+        new_board_state_p2[:2, -2:] = 1
+        new_board_state_p2[-2:, :2] = 1
+        new_board_state_p2[-2:, -2:] = 1
 
         if self.p1_turn:
-            return new_board_state_p1, new_board_state_p2, new_board_state_empty
+            return np.stack(
+                [new_board_state_p1, new_board_state_p2, new_board_state_empty]
+            )
 
-        return new_board_state_p2, new_board_state_p1, new_board_state_empty
+        return np.stack(
+            [new_board_state_p2, new_board_state_p1, new_board_state_empty]
+        )
 
     def visualize_board(
         self,
@@ -139,7 +149,8 @@ class HexGame(Game):
             """Generate the vertices of a regular hexagon given a center (x,y), and a size (distance from center to any vertex)."""
             angles = np.linspace(0, 2 * np.pi, 7)
             return np.c_[
-                (center[0] + size * np.cos(angles)), (center[1] + size * np.sin(angles))
+                (center[0] + size * np.cos(angles)
+                 ), (center[1] + size * np.sin(angles))
             ]
 
         # Create the board
@@ -153,7 +164,8 @@ class HexGame(Game):
         board_state = self.board_state.copy()
         # Surrond the board with colored hexagons
         # to indicate the two sides to connect
-        p1_side = np.array([self.p1_encoding] * (board_size + 2)).reshape(1, -1)
+        p1_side = np.array([self.p1_encoding] *
+                           (board_size + 2)).reshape(1, -1)
         p2_side = np.array([self.p2_encoding] * board_size).reshape(-1, 1)
         board_state = np.concatenate([p2_side, board_state, p2_side], axis=1)
         board_state = np.concatenate([p1_side, board_state, p1_side], axis=0)
@@ -272,7 +284,8 @@ class HexGame(Game):
         )
         for child in children:
             move = child.game_state.last_move
-            distribution[move[0], move[1]] = np.exp(child.visits) / soft_max_sum
+            distribution[move[0], move[1]] = np.exp(
+                child.visits) / soft_max_sum
         for move in legal_moves:
             if distribution[move[0], move[1]] == 0:
                 distribution[move[0], move[1]] = 1 / soft_max_sum
