@@ -18,6 +18,7 @@ if VISUALIZE:
     fig.show()
     fig.canvas.draw()
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_num_lock):
     torch.set_num_threads(1)
@@ -29,8 +30,8 @@ def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_n
             new_game, distribution = mcts.search()
             local_RBUF.append(
                 (
-                    torch.tensor(game.get_nn_input(ANET.num_input_channels), dtype=torch.float32),
-                    torch.tensor(distribution, dtype=torch.float32),
+                    torch.tensor(game.get_nn_input(ANET.num_input_channels), dtype=torch.float32).to(device),
+                    torch.tensor(distribution, dtype=torch.float32).to(device),
                 )
             )
             game = new_game
@@ -56,12 +57,12 @@ def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_n
 
 if __name__ == "__main__":
     mp.set_start_method("spawn")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ANET = ConvNetwork()
     if START_RL_FROM_STATE is not None:
         print(f"Starting RL from state {START_RL_FROM_STATE}")
         ANET.load_state_dict(torch.load(f"saved_networks/{START_RL_FROM_STATE}", map_location=device))
-    ANET.share_memory()
+    if not torch.cuda.is_available():
+        ANET.share_memory() 
     RBUF = mp.Manager().list()
     RBUF_lock = mp.Lock()
     game_num = mp.Value("i", 0)
