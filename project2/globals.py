@@ -1,4 +1,4 @@
-EXPERIMENT_NAME = "feedforward1"
+EXPERIMENT_NAME = "conv"
 VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 7

@@ -83,10 +83,10 @@ class MCTS:
             logits = logits.detach().cpu().numpy().squeeze()
             # Mask out illegal moves
             logits = game_state.mask_illegal_indexes(logits)
-            # Renormalize
             if logits.sum() == 0:
                 logits = game_state.mask_illegal_indexes(np.ones_like(logits))
                 print("All legal moves were masked, choosing first move.")
+            # Renormalize
             # logits = logits / logits.sum()
             if np.random.rand() < MCTS_ROLLOUT_EPSILON:
                 legal_moves = game_state.get_legal_moves()

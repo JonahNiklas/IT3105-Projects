@@ -35,6 +35,9 @@ class Game:
     def mask_illegal_indexes(self, logits):
         pass
 
+    def make_distribution(self, children: List) -> np.ndarray:
+        pass
+
     def __eq__(self, __value: object) -> bool:
         pass
 
@@ -69,11 +72,6 @@ class HexGame(Game):
             move = np.unravel_index(move, self.board_state.shape)
 
         assert len(move) == 2
-        # p2 uses a different coordinate system where the board is transposed
-        # so the anet always tries to connect top and bottom
-        # therefore we need to transpose back the move to the original coordinate system
-        if not self.p1_turn:
-            move = (move[1], move[0])
 
         assert self.board_state[move[0], move[1]] == self.empty_encoding
 
@@ -198,8 +196,6 @@ class HexGame(Game):
         plt.pause(0.1)
 
     def get_legal_moves(self) -> List[tuple[int, int]]:
-        if not self.p1_turn:
-            return np.argwhere(np.transpose(self.board_state) == self.empty_encoding)
         return np.argwhere(self.board_state == self.empty_encoding)
 
     def get_successor_states(self) -> List["HexGame"]:
@@ -295,13 +291,14 @@ class HexGame(Game):
             if distribution[move[0], move[1]] == 0:
                 distribution[move[0], move[1]] = 1 / soft_max_sum
 
+        if not self.p1_turn:
+            distribution = np.transpose(distribution)
+
         return distribution
 
     def mask_illegal_indexes(self, logits):
         if not self.p1_turn:
-            return np.where(
-                np.transpose(self.board_state) == self.empty_encoding, logits, 0
-            )
+            logits = np.transpose(logits)
 
         return np.where(self.board_state == self.empty_encoding, logits, 0)
 
