@@ -25,7 +25,7 @@ class NeuralNetwork(torch.nn.Module):
         elif ANET_OPTIMIZER == "rmsprop":
             optimizer = torch.optim.RMSprop(self.parameters(), lr=ANET_LEARNING_RATE)
         x, y = next(iter(dataloader))
-        x, y = x.clone().detach().to(device), y.clone().detach().to(device)
+        x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
         output = self(x)
         loss = torch.nn.functional.mse_loss(output, y)
