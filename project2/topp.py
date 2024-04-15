@@ -25,7 +25,7 @@ if TOPP_VISUALIZE:
     fig.canvas.draw()
 
 ANETS = {}
-ANETS["untrained"] = FeedForwardNetwork()
+ANETS["untrained"] = ConvNetwork()
 ANETS["supervised"] = ConvNetwork()
 ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised_10.pt", map_location=device))
 folder_path = "saved_networks"
