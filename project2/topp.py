@@ -36,7 +36,7 @@ for filename in sorted(
     if filename.startswith(EXPERIMENT_NAME) and filename.endswith(".pt"):
         # Load the network
         network_path = os.path.join(folder_path, filename)
-        network = FeedForwardNetwork()
+        network = ConvNetwork()
         network.load_state_dict(torch.load(network_path, map_location=device))
         ANETS[filename.replace(EXPERIMENT_NAME + "_", "")] = network
 
