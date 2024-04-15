@@ -1,4 +1,4 @@
-EXPERIMENT_NAME = "conv5x5-100-sims"
+EXPERIMENT_NAME = "cuda"
 VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 5
