@@ -30,8 +30,8 @@ def play_game(process_id, ANET: NeuralNetwork, RBUF, RBUF_lock, game_num, game_n
             new_game, distribution = mcts.search()
             local_RBUF.append(
                 (
-                    torch.tensor(game.get_nn_input(ANET.num_input_channels), dtype=torch.float32).to(device),
-                    torch.tensor(distribution, dtype=torch.float32).to(device),
+                    torch.tensor(game.get_nn_input(ANET.num_input_channels), dtype=torch.float32).cpu(),
+                    torch.tensor(distribution, dtype=torch.float32).cpu(),
                 )
             )
             game = new_game
