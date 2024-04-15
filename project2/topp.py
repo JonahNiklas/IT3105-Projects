@@ -27,7 +27,8 @@ if TOPP_VISUALIZE:
 ANETS = {}
 ANETS["untrained"] = ConvNetwork()
 ANETS["supervised"] = ConvNetwork()
-ANETS["supervised"].load_state_dict(torch.load("saved_networks/supervised_10.pt", map_location=device))
+ANETS["supervised"].load_state_dict(torch.load(
+    "saved_networks/supervised_10.pt", map_location=device))
 folder_path = "saved_networks"
 for filename in sorted(
     os.listdir(folder_path), key=lambda x: int(x.split("_")[-1].split(".")[0])
@@ -60,10 +61,12 @@ def play_a_game(ANET1: NeuralNetwork, ANET2: NeuralNetwork, visualize=False):
             continue
 
         if game.p1_turn:
-            nn_input = torch.tensor(game.get_nn_input(ANET1.num_input_channels)).float().unsqueeze(0)
+            nn_input = torch.tensor(game.get_nn_input(
+                ANET1.num_input_channels)).float().unsqueeze(0)
             logits = ANET1(nn_input).detach().squeeze(0).cpu().numpy()
         else:
-            nn_input = torch.tensor(game.get_nn_input(ANET2.num_input_channels)).float().unsqueeze(0)
+            nn_input = torch.tensor(game.get_nn_input(
+                ANET2.num_input_channels)).float().unsqueeze(0)
             logits = ANET2(nn_input).detach().squeeze(0).cpu().numpy()
         assert logits.shape == (game.size, game.size)
         logits = game.mask_illegal_indexes(logits)
@@ -75,8 +78,10 @@ def play_a_game(ANET1: NeuralNetwork, ANET2: NeuralNetwork, visualize=False):
         game = game.make_move(move)
         if visualize:
             # Set windows title
-            print(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}", end="\r")
-            plt.title(f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}")
+            print(
+                f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}", end="\r")
+            plt.title(
+                f"{ANET1.__class__.__name__} vs {ANET2.__class__.__name__}")
             game.visualize_board(ax)
             time.sleep(0.25)
 
@@ -119,3 +124,4 @@ plt.title(f"TOPP Results - {EXPERIMENT_NAME}")
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 plt.savefig(f"project2/figs/{EXPERIMENT_NAME}_topp_results_{timestamp}.png")
 plt.show()
+input("Press Enter to exit...")

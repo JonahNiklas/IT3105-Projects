@@ -1,8 +1,9 @@
-EXPERIMENT_NAME = "cuda"
+EXPERIMENT_NAME = "conv5x5-100-sims"
 VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 5
-NUMBER_OF_EPISODES = 32*8  # actual games
+NUMBER_OF_EPISODES = 16*10
+# actual games
 NUMBER_OF_SIMULATIONS = 100  # MCTS simulations per move
 START_RL_FROM_STATE = None
 
@@ -14,8 +15,8 @@ ANET_ACTIVATION_FUNCTION = 'relu'  # linear, sigmoid, tanh, relu
 ANET_OPTIMIZER = 'adam'  # adagrad, sgd, adam, rmsprop
 ANET_M = 8  # number of ANETs to be cached
 ANET_BATCH_SIZE = 128
-ANET_d = 8 # number of conv layers
-ANET_W = 128 # number of conv filters per layer
+ANET_d = 8  # number of conv layers
+ANET_W = 128  # number of conv filters per layer
 
 # TOPP
 TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS = 100
