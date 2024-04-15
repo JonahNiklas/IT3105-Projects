@@ -25,7 +25,7 @@ class NeuralNetwork(torch.nn.Module):
         elif ANET_OPTIMIZER == "rmsprop":
             optimizer = torch.optim.RMSprop(self.parameters(), lr=ANET_LEARNING_RATE)
         x, y = next(iter(dataloader))
-        x, y = x.to(device), y.to(device)
+        x, y = x.clone().detach().to(device), y.clone().detach().to(device)
         optimizer.zero_grad()
         output = self(x)
         loss = torch.nn.functional.mse_loss(output, y)
@@ -99,7 +99,6 @@ class ConvNetwork(NeuralNetwork):
     def __init__(self, board_size=BOARD_SIZE):
         super(ConvNetwork, self).__init__()
         self.num_input_channels = 3
-        assert board_size > 5, "ConvNetwork only supports board sizes larger than 5"
         self.board_size = board_size
         self.conv_stack = torch.nn.Sequential()
         self.conv_stack.add_module(
