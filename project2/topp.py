@@ -47,7 +47,7 @@ wins = {}
 for key, value in ANETS.items():
     wins[key] = 0
 
-win_matrix = np.zeros((num_nets, num_nets))
+win_matrix_percentage = np.zeros((num_nets, num_nets))
 
 
 rounds = num_nets * (num_nets - 1)
@@ -114,8 +114,8 @@ with tqdm(total=rounds, desc="TOPP Progress") as pbar:
                 )
                 wins[filename1] += wins_p1
                 wins[filename2] += wins_p2
-                win_matrix[i, j] = wins_p1
-                win_matrix[j, i] = wins_p2
+                win_matrix_percentage[i, j] = wins_p1 / \
+                    TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS/2
                 pbar.update(1)
 
 # Reset plot
@@ -131,7 +131,7 @@ ax1.set_title("Total wins")
 
 
 # Plot the win matrix
-im = ax2.imshow(win_matrix, cmap='hot', interpolation='nearest')
+im = ax2.imshow(win_matrix_percentage, cmap='hot', interpolation='nearest')
 ax2.set_xticks(range(num_nets))
 ax2.set_yticks(range(num_nets))
 ax2.set_xticklabels(ANETS.keys(), rotation=90)
@@ -143,7 +143,8 @@ plt.colorbar(im, ax=ax2, label='Wins')
 
 # Adjust the layout
 plt.subplots_adjust(bottom=0.25, wspace=0.5)
-fig.suptitle(f"TOPP Results - {EXPERIMENT_NAME}\nEpsilon: {TOPP_EPSILON}")
+fig.suptitle(
+    f"TOPP Results - {EXPERIMENT_NAME}\nProbabilty of picking random move: {TOPP_EPSILON*100}% - Games between any two players: {TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS}")
 # Save the figure
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 plt.savefig(f"project2/figs/{EXPERIMENT_NAME}_topp_results_{timestamp}.png")
