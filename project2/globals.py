@@ -1,11 +1,11 @@
-EXPERIMENT_NAME = "conv5x5-100-sims"
+EXPERIMENT_NAME = "conv7x7-2000-sims"
 VERBOSE = False
 VISUALIZE = False
-BOARD_SIZE = 5
-NUMBER_OF_EPISODES = 16*10
+BOARD_SIZE = 7
+NUMBER_OF_EPISODES = 2000
 # actual games
-NUMBER_OF_SIMULATIONS = 100  # MCTS simulations per move
-START_RL_FROM_STATE = None
+NUMBER_OF_SIMULATIONS = 200  # MCTS simulations per move
+START_RL_FROM_STATE = "supervised_10.pt"
 
 # ANET
 ANET_LEARNING_RATE = 1e-3
@@ -13,7 +13,7 @@ ANET_NUM_HIDDEN_LAYERS = 7
 ANET_NUM_HIDDEN_NODES = 100
 ANET_ACTIVATION_FUNCTION = 'relu'  # linear, sigmoid, tanh, relu
 ANET_OPTIMIZER = 'adam'  # adagrad, sgd, adam, rmsprop
-ANET_M = 8  # number of ANETs to be cached
+ANET_M = 20  # number of ANETs to be cached
 ANET_BATCH_SIZE = 128
 ANET_d = 8  # number of conv layers
 ANET_W = 128  # number of conv filters per layer
