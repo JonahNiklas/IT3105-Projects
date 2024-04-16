@@ -1,5 +1,5 @@
 # Import and initialize your own actor
-from ActorClient import ActorClient
+from hex_client_23.ActorClient import ActorClient
 from project2.hex_actor import HexActor
 
 actor = HexActor()

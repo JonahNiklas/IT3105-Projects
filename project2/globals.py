@@ -1,4 +1,4 @@
-EXPERIMENT_NAME = "conv7x7-2000-sims"
+EXPERIMENT_NAME = "conv7x7-200-sims-2000-e"
 VERBOSE = False
 VISUALIZE = False
 BOARD_SIZE = 7
