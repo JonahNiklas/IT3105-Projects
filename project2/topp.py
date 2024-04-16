@@ -47,6 +47,9 @@ wins = {}
 for key, value in ANETS.items():
     wins[key] = 0
 
+win_matrix = np.zeros((num_nets, num_nets))
+
+
 rounds = num_nets * (num_nets - 1)
 
 
@@ -111,17 +114,40 @@ with tqdm(total=rounds, desc="TOPP Progress") as pbar:
                 )
                 wins[filename1] += wins_p1
                 wins[filename2] += wins_p2
+                win_matrix[i, j] = wins_p1
+                win_matrix[j, i] = wins_p2
                 pbar.update(1)
 
 # Reset plot
 plt.close()
-# Plot the results
-plt.bar(wins.keys(), wins.values())
-plt.xticks(rotation=45)
-plt.gcf().subplots_adjust(bottom=0.25)
-plt.ylabel("Wins")
-plt.title(f"TOPP Results - {EXPERIMENT_NAME}")
+# Create subplots
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+# Plot the bar chart
+ax1.bar(wins.keys(), wins.values())
+ax1.set_xticklabels(wins.keys(), rotation=90)
+ax1.set_ylabel("Wins")
+ax1.set_title("Total wins")
+
+
+# Plot the win matrix
+im = ax2.imshow(win_matrix, cmap='hot', interpolation='nearest')
+ax2.set_xticks(range(num_nets))
+ax2.set_yticks(range(num_nets))
+ax2.set_xticklabels(ANETS.keys(), rotation=90)
+ax2.set_yticklabels(ANETS.keys())
+ax2.set_xlabel('Second player')
+ax2.set_ylabel('Starting player')
+ax2.set_title('Win matrix')
+plt.colorbar(im, ax=ax2, label='Wins')
+
+# Adjust the layout
+plt.subplots_adjust(bottom=0.25, wspace=0.5)
+fig.suptitle(f"TOPP Results - {EXPERIMENT_NAME}\nEpsilon: {TOPP_EPSILON}")
+# Save the figure
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 plt.savefig(f"project2/figs/{EXPERIMENT_NAME}_topp_results_{timestamp}.png")
+
+# Show the figure and wait for user input
 plt.show()
 input("Press Enter to exit...")
