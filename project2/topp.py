@@ -115,7 +115,7 @@ with tqdm(total=rounds, desc="TOPP Progress") as pbar:
                 wins[filename1] += wins_p1
                 wins[filename2] += wins_p2
                 win_matrix_percentage[i, j] = wins_p1 / \
-                    TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS/2
+                    TOPP_NUM_GAMES_BETWEEN_ANY_TWO_PLAYERS*2
                 pbar.update(1)
 
 # Reset plot
